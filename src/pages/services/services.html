@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services Manager - GRP Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+       
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto bg-gray-50 relative w-full">
+            <!-- Content Container -->
+            <div id="services-container" class="p-6 md:p-8 min-h-screen">
+                <!-- Injected via JS -->
+                <div class="animate-pulse flex items-center justify-center h-full text-gray-400">Loading Services...
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Service Modal (Hidden) -->
+    <div id="service-modal"
+        class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 backdrop-blur-sm overflow-y-auto py-10">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 relative mx-4 my-auto">
+            <button id="close-service-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-xl font-bold mb-6 text-gray-800">Add New Service</h3>
+            <form id="service-form" class="space-y-6">
+                <!-- Helper for ID if editing? Currently Add Only -->
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Column 1: Basic Info -->
+                    <div class="space-y-4">
+                        <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wide border-b pb-2">Basic Info
+                        </h4>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Service
+                                Thumbnail</label>
+                            <input type="file" id="service-thumb-input" class="w-full text-sm block text-slate-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-full file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-blue-50 file:text-blue-700
+                                hover:file:bg-blue-100" accept="image/*">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Service Title</label>
+                            <input type="text" id="service-title" placeholder="e.g. Faucet Repair"
+                                class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Short
+                                Description</label>
+                            <textarea id="service-desc" placeholder="Brief summary for the card..."
+                                class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: About & Video -->
+                    <div class="space-y-4">
+                        <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wide border-b pb-2">About &
+                            Details</h4>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">About Section
+                                Title</label>
+                            <input type="text" id="new-about-title" placeholder="e.g. About Faucet Repairs"
+                                class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Introduction</label>
+                            <textarea id="new-about-intro" placeholder="Detailed introduction..."
+                                class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                rows="2"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Features (One per
+                                line)</label>
+                            <textarea id="new-about-features" placeholder="- Feature 1&#10;- Feature 2"
+                                class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                rows="2"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Add Initial Video
+                                (Thumbnail)</label>
+                            <input type="file" id="new-video-input" class="w-full text-sm block text-slate-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-full file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-blue-50 file:text-blue-700
+                                hover:file:bg-blue-100" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button type="button" id="cancel-service-modal"
+                        class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded text-sm font-medium transition-colors">Cancel</button>
+                    <button type="submit"
+                        class="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded text-sm font-bold shadow-sm transition-transform active:scale-95">Save
+                        Service</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="services.js"></script>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Testimonials Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom scrollbar */
+        body::-webkit-scrollbar { width: 8px; }
+        body::-webkit-scrollbar-thumb { 
+            background: #cbd5e1; 
+            border-radius: 4px; 
+            transition: background 0.3s ease;
+        }
+        body::-webkit-scrollbar-thumb:hover { 
+            background: #94a3b8; 
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes scaleIn {
+            from { 
+                opacity: 0;
+                transform: scale(0.95); 
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1); 
+            }
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes starGlow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        .animate-scale-in {
+            animation: scaleIn 0.3s ease-out forwards;
+        }
+        
+        .animate-slide-in-right {
+            animation: slideInRight 0.4s ease-out forwards;
+        }
+        
+        .animate-slide-in-left {
+            animation: slideInLeft 0.4s ease-out forwards;
+        }
+        
+        .animate-pulse-once {
+            animation: pulse 0.3s ease-in-out;
+        }
+        
+        .animate-bounce-once {
+            animation: bounce 0.6s ease;
+        }
+        
+        .animate-shake {
+            animation: shake 0.3s ease-in-out;
+        }
+        
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .animate-star-glow {
+            animation: starGlow 1s ease-in-out infinite;
+        }
+        
+        /* Review card hover effects */
+        .review-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .review-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(59, 130, 246, 0.1),
+                transparent
+            );
+            transition: left 0.7s ease;
+            z-index: 1;
+        }
+        
+        .review-card:hover::before {
+            left: 100%;
+        }
+        
+        .review-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* Avatar animation */
+        .review-avatar {
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        .review-card:hover .review-avatar {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        /* Stars animation */
+        .star-rating {
+            transition: all 0.3s ease;
+        }
+        
+        .review-card:hover .star-rating {
+            transform: scale(1.1);
+        }
+        
+        /* Action buttons */
+        .action-btn {
+            transition: all 0.2s ease;
+            transform-origin: center;
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Quote marks animation */
+        .quote-mark {
+            opacity: 0.1;
+            transition: opacity 0.3s ease;
+        }
+        
+        .review-card:hover .quote-mark {
+            opacity: 0.2;
+        }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            background-color: #10b981;
+        }
+        
+        .toast.error {
+            background-color: #ef4444;
+        }
+        
+        .toast.info {
+            background-color: #3b82f6;
+        }
+        
+        .toast.warning {
+            background-color: #f59e0b;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out 0.3s forwards;
+        }
+        
+        /* Rating slider thumb */
+        input[type="range"]::-webkit-slider-thumb {
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Modal backdrop blur */
+        .modal-backdrop {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        
+        /* Ripple effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple-animation 0.6s linear;
+        }
+        
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        /* Character counter */
+        .char-counter {
+            transition: color 0.3s ease;
+        }
+        
+        /* Gradient backgrounds */
+        .gradient-bg-1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .gradient-bg-2 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .gradient-bg-3 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .gradient-bg-4 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .gradient-bg-5 {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .gradient-bg-6 {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-6 font-sans min-h-screen">
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <div class="max-w-7xl mx-auto">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8 animate-slide-in-left">
+            <div class="flex items-center gap-4">
+                <button onclick="goBack()" 
+                        class="p-2 hover:bg-gray-200 rounded-full transition-all duration-300 text-gray-600 action-btn relative overflow-hidden">
+                    <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Text Testimonials</h1>
+                    <p class="text-sm text-gray-500">Manage client reviews and ratings.</p>
+                </div>
+            </div>
+            <button onclick="openModal()" 
+                    class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-sm flex items-center gap-2 transition-all duration-300 action-btn relative overflow-hidden group">
+                <i data-lucide="plus" class="w-4 h-4"></i> 
+                <span>Add Review</span>
+                <span class="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-500"></span>
+            </button>
+        </div>
+
+        <!-- Review Grid -->
+        <div id="review-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Reviews will be rendered here -->
+        </div>
+        
+        <!-- Empty State -->
+        <div id="empty-state" class="text-center py-16 empty-state hidden">
+            <div class="mx-auto w-20 h-20 bg-gradient-to-br from-amber-100 to-yellow-100 rounded-2xl flex items-center justify-center mb-6 animate-pulse-once animate-float">
+                <i data-lucide="message-square" class="w-10 h-10 text-amber-500"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-700 mb-2">No testimonials yet</h3>
+            <p class="text-sm text-gray-500 mb-6">Add your first client review to get started</p>
+            <button onclick="openModal()" 
+                    class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-sm flex items-center gap-2 mx-auto transition-all duration-300 action-btn">
+                <i data-lucide="plus" class="w-4 h-4"></i> Add First Review
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Modal -->
+    <div id="review-modal" 
+         class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center modal-backdrop opacity-0 transition-all duration-300">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 transform scale-95 transition-all duration-300 flex flex-col max-h-[90vh]" id="modal-content">
+            
+            <div class="flex items-center justify-between p-6 border-b border-gray-100">
+                <h3 class="text-lg font-bold text-gray-800" id="modal-title">Add Review</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 action-btn">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4 overflow-y-auto">
+                <input type="hidden" id="review-index"> 
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                            Client Name
+                        </label>
+                        <input type="text" 
+                               id="input-name" 
+                               class="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                               placeholder="Enter client name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                            <i data-lucide="briefcase" class="w-4 h-4"></i>
+                            Role / Job
+                        </label>
+                        <input type="text" 
+                               id="input-role" 
+                               class="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                               placeholder="e.g., Factory Owner">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                        <i data-lucide="message-square" class="w-4 h-4"></i>
+                        Review Text
+                    </label>
+                    <div class="relative">
+                        <div class="absolute top-4 left-4 text-4xl text-blue-100 font-serif">"</div>
+                        <textarea id="input-text" 
+                                  rows="4" 
+                                  class="w-full p-4 pl-10 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 resize-none"
+                                  placeholder="What did the client say about your service?"></textarea>
+                        <div class="absolute bottom-4 right-4 text-xs text-gray-400">
+                            <span id="text-char-count">0/300 characters</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                        <i data-lucide="star" class="w-4 h-4"></i>
+                        Rating (1-5)
+                    </label>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <input type="range" 
+                                   id="input-rating" 
+                                   min="1" 
+                                   max="5" 
+                                   value="5" 
+                                   step="1"
+                                   class="w-full h-2 bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-blue-500 [&::-webkit-slider-thumb]:to-indigo-500 [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-lg"
+                                   oninput="updateStarPreview(this.value)">
+                            <div id="rating-preview" class="flex items-center gap-1 min-w-[100px]">
+                                <!-- Stars will be dynamically added here -->
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span id="rating-label" class="text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">5 Stars - Excellent</span>
+                            <span class="text-xs text-gray-500">Slide to adjust</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 bg-gray-50 rounded-b-xl flex justify-end gap-3 border-t border-gray-100">
+                <button onclick="closeModal()" 
+                        class="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-all duration-300 action-btn">
+                    Cancel
+                </button>
+                <button onclick="saveReview()" 
+                        id="save-review-btn"
+                        class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-sm transition-all duration-300 action-btn flex items-center gap-2">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    <span id="save-btn-text">Save Review</span>
+                    <svg id="save-spinner" class="hidden w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="./Text_Testimony.js"></script>
+
+
+
+</body>
+</html>

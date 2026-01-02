@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Testimonials Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom scrollbar */
+        body::-webkit-scrollbar { width: 8px; }
+        body::-webkit-scrollbar-thumb { 
+            background: #cbd5e1; 
+            border-radius: 4px; 
+            transition: background 0.3s ease;
+        }
+        body::-webkit-scrollbar-thumb:hover { 
+            background: #94a3b8; 
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes scaleIn {
+            from { 
+                opacity: 0;
+                transform: scale(0.95); 
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1); 
+            }
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        
+        
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        .animate-scale-in {
+            animation: scaleIn 0.3s ease-out forwards;
+        }
+        
+        .animate-slide-in-right {
+            animation: slideInRight 0.4s ease-out forwards;
+        }
+        
+        .animate-slide-in-left {
+            animation: slideInLeft 0.4s ease-out forwards;
+        }
+        
+        .animate-pulse-once {
+            animation: pulse 0.3s ease-in-out;
+        }
+        
+        .animate-bounce-once {
+            animation: bounce 0.6s ease;
+        }
+        
+        .animate-shake {
+            animation: shake 0.3s ease-in-out;
+        }
+        
+        .animate-video-play {
+            animation: videoPlay 0.5s ease-out;
+        }
+        
+        /* Video card hover effects */
+        .video-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .video-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.1),
+                transparent
+            );
+            transition: left 0.7s ease;
+            z-index: 1;
+        }
+        
+        .video-card:hover::before {
+            left: 100%;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        /* Video thumbnail effects */
+        .video-thumbnail {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .video-thumbnail::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent 40%);
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+        
+        .video-card:hover .video-thumbnail::after {
+            opacity: 0.9;
+        }
+        
+        .video-thumbnail img {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .video-card:hover .video-thumbnail img {
+            transform: scale(1.08);
+        }
+        
+        /* Platform badge */
+        .platform-badge {
+            transition: all 0.3s ease;
+        }
+        
+        .video-card:hover .platform-badge {
+            transform: translateY(0) scale(1.1);
+        }
+        
+        /* Action buttons */
+        .action-btn {
+            transition: all 0.2s ease;
+            transform-origin: center;
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.15);
+        }
+        
+        /* Play button overlay */
+        .play-overlay {
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+        }
+        
+        .video-thumbnail:hover .play-overlay {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .toast.success {
+            background-color: #10b981;
+        }
+        
+        .toast.error {
+            background-color: #ef4444;
+        }
+        
+        .toast.info {
+            background-color: #3b82f6;
+        }
+        
+        .toast.warning {
+            background-color: #f59e0b;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out 0.3s forwards;
+        }
+        
+        /* URL input loading state */
+        .url-loading {
+            position: relative;
+        }
+        
+        .url-loading::after {
+            content: '';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            border: 2px solid #3b82f6;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        
+        .url-loading.loading::after {
+            display: block;
+        }
+        
+        @keyframes spin {
+            0% { transform: translateY(-50%) rotate(0deg); }
+            100% { transform: translateY(-50%) rotate(360deg); }
+        }
+        
+        /* Rating stars animation */
+        .rating-star {
+            transition: transform 0.2s ease;
+        }
+        
+        .rating-star:hover {
+            transform: scale(1.2);
+        }
+        
+        /* Thumbnail preview */
+        .thumbnail-preview {
+            transition: all 0.3s ease;
+        }
+        
+        .thumbnail-preview:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Modal backdrop blur */
+        .modal-backdrop {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        
+        /* Ripple effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple-animation 0.6s linear;
+        }
+        
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        /* Platform indicator animation */
+        .platform-indicator {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-6 font-sans min-h-screen">
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <div class="max-w-7xl mx-auto">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8 animate-slide-in-left">
+            <div class="flex items-center gap-4">
+                <button onclick="goBack()" 
+                        class="p-2 hover:bg-gray-200 rounded-full transition-all duration-300 text-gray-600 action-btn relative overflow-hidden">
+                    <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Video Testimonials</h1>
+                    <p class="text-sm text-gray-500">Manage YouTube Shorts & Instagram Reels.</p>
+                </div>
+            </div>
+            <button onclick="openModal()" 
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm flex items-center gap-2 transition-all duration-300 action-btn relative overflow-hidden group">
+                <i data-lucide="plus" class="w-4 h-4"></i> 
+                <span>Add Video</span>
+                <span class="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-500"></span>
+            </button>
+        </div>
+
+        <!-- Video Grid -->
+        <div id="video-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Videos will be rendered here -->
+        </div>
+        
+        <!-- Empty State -->
+        <div id="empty-state" class="text-center py-16 empty-state hidden">
+            <div class="mx-auto w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mb-6 animate-pulse-once">
+                <i data-lucide="video" class="w-10 h-10 text-blue-500"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-700 mb-2">No video testimonials yet</h3>
+            <p class="text-sm text-gray-500 mb-6">Add your first video testimonial to get started</p>
+            <button onclick="openModal()" 
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm flex items-center gap-2 mx-auto transition-all duration-300 action-btn">
+                <i data-lucide="plus" class="w-4 h-4"></i> Add First Video
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Modal -->
+    <div id="video-modal" 
+         class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center modal-backdrop opacity-0 transition-all duration-300">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 transform scale-95 transition-all duration-300 flex flex-col max-h-[90vh]" id="modal-content">
+            
+            <div class="flex items-center justify-between p-6 border-b border-gray-100">
+                <h3 class="text-lg font-bold text-gray-800" id="modal-title">Add Video Testimonial</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 action-btn">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-6">
+                <input type="hidden" id="video-index"> 
+
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-100">
+                    <label class="block text-sm font-bold text-blue-800 mb-1 flex items-center gap-2">
+                        <i data-lucide="link" class="w-4 h-4"></i>
+                        Video Link (YouTube / Instagram)
+                    </label>
+                    <div class="flex gap-2">
+                        <div class="flex-1 relative">
+                            <input type="text" 
+                                   id="input-url" 
+                                   placeholder="Paste https://youtube.com/shorts/... or Instagram Reel" 
+                                   class="w-full p-3 border border-blue-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm url-loading">
+                        </div>
+                        <button onclick="previewThumbnail()" 
+                                id="preview-btn"
+                                class="px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-bold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 action-btn flex items-center gap-2">
+                            <i data-lucide="search" class="w-4 h-4"></i>
+                            <span>Preview</span>
+                        </button>
+                    </div>
+                    <p class="text-xs text-blue-600 mt-2 flex items-center gap-1" id="url-status">
+                        <i data-lucide="info" class="w-3 h-3"></i>
+                        <span>Supports YouTube Shorts, Standard YouTube, and Instagram Reels.</span>
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                            <i data-lucide="user" class="w-4 h-4"></i>
+                            Client Name
+                        </label>
+                        <input type="text" 
+                               id="input-name" 
+                               class="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                               placeholder="Enter client name">
+                    </div>
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                            <i data-lucide="briefcase" class="w-4 h-4"></i>
+                            Role / Job
+                        </label>
+                        <input type="text" 
+                               id="input-role" 
+                               class="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                               placeholder="e.g., Factory Manager">
+                    </div>
+
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                            <i data-lucide="folder" class="w-4 h-4"></i>
+                            Project Title
+                        </label>
+                        <input type="text" 
+                               id="input-title" 
+                               placeholder="e.g. Industrial Roofing" 
+                               class="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300">
+                    </div>
+                    
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                            <i data-lucide="message-square" class="w-4 h-4"></i>
+                            Key Quote
+                        </label>
+                        <textarea id="input-quote" 
+                                  rows="2" 
+                                  class="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 resize-none"
+                                  placeholder="What did the client say?"></textarea>
+                        <div class="text-xs text-gray-400 mt-1 flex justify-between">
+                            <span id="quote-char-count">0/120 characters</span>
+                            <span>Keep it impactful</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                            <i data-lucide="star" class="w-4 h-4"></i>
+                            Rating (1-5)
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <select id="input-rating" 
+                                    class="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300">
+                                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                                <option value="4">⭐⭐⭐⭐ (4)</option>
+                                <option value="3">⭐⭐⭐ (3)</option>
+                                <option value="2">⭐⭐ (2)</option>
+                                <option value="1">⭐ (1)</option>
+                            </select>
+                            <div id="rating-preview" class="text-yellow-500 text-lg"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                            <i data-lucide="clock" class="w-4 h-4"></i>
+                            Duration
+                        </label>
+                        <input type="text" 
+                               id="input-duration" 
+                               placeholder="e.g. 1:25" 
+                               class="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-1">
+                        <i data-lucide="image" class="w-4 h-4"></i>
+                        Thumbnail URL
+                    </label>
+                    <div class="flex gap-4 items-start">
+                        <div class="relative">
+                            <img id="thumb-preview" 
+                                 src="" 
+                                 class="thumbnail-preview w-20 h-28 object-cover rounded-lg bg-gradient-to-br from-gray-100 to-gray-200 border border-gray-300">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg"></div>
+                        </div>
+                        <div class="flex-1">
+                            <input type="text" 
+                                   id="input-thumbnail" 
+                                   class="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm mb-1 transition-all duration-300">
+                            <p class="text-xs text-gray-500 flex items-center gap-1">
+                                <i data-lucide="info" class="w-3 h-3"></i>
+                                Auto-filled for YouTube. Paste URL for Instagram manual cover.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 bg-gray-50 rounded-b-xl flex justify-end gap-3 border-t border-gray-100">
+                <button onclick="closeModal()" 
+                        class="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-all duration-300 action-btn">
+                    Cancel
+                </button>
+                <button onclick="saveVideo()" 
+                        id="save-video-btn"
+                        class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-sm transition-all duration-300 action-btn flex items-center gap-2">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    <span id="save-btn-text">Save Video</span>
+                    <svg id="save-spinner" class="hidden w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+<script src="./Video_Testimony.js"></script>
+
+    
+</body>
+</html>
