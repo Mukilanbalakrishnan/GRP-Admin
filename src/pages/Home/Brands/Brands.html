@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brands Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Custom scrollbar */
+        body::-webkit-scrollbar { width: 8px; }
+        body::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        /* Brand card hover effects */
+        .brand-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .brand-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Drag active state */
+        .drag-over {
+            border: 2px dashed #3b82f6;
+            background-color: #eff6ff;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 p-6 font-sans">
+
+    <div class="max-w-6xl mx-auto">
+        
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-4">
+                <button onclick="goBack()" class="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-600">
+                    <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                </button>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Partner Brands</h1>
+                    <p class="text-sm text-gray-500">Manage scrolling logos (Images).</p>
+                </div>
+            </div>
+            <button onclick="openModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm flex items-center gap-2 transition-colors">
+                <i data-lucide="plus" class="w-4 h-4"></i> Add Brand
+            </button>
+        </div>
+
+        <div id="brands-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            </div>
+
+    </div>
+
+    <div id="brand-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 transform scale-95 transition-transform duration-300" id="modal-content">
+            
+            <div class="flex items-center justify-between p-6 border-b border-gray-100">
+                <h3 class="text-lg font-bold text-gray-800" id="modal-title">Add Brand</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="brand-index"> 
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Brand Name</label>
+                    <input type="text" id="input-name" class="w-full p-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Brand Logo Image</label>
+                    
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="input-image" placeholder="Image URL (https://...)" class="flex-1 p-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                    </div>
+
+                    <div class="relative group">
+                        <input type="file" id="file-upload" class="hidden" accept="image/*" onchange="handleFileUpload(this)">
+                        <button onclick="document.getElementById('file-upload').click()" class="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 text-sm hover:border-blue-400 hover:text-blue-500 transition-colors flex items-center justify-center gap-2">
+                            <i data-lucide="upload" class="w-4 h-4"></i> Upload Local Image
+                        </button>
+                    </div>
+
+                    <div class="mt-3">
+                        <p class="text-xs text-gray-500 mb-2">Preview:</p>
+                        <div class="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center border border-gray-200 overflow-hidden">
+                            <img id="img-preview" src="" alt="Preview" class="w-full h-full object-contain p-1 hidden">
+                            <i id="img-placeholder" data-lucide="image" class="w-6 h-6 text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 bg-gray-50 rounded-b-xl flex justify-end gap-3 border-t border-gray-100">
+                <button onclick="closeModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg transition-colors">Cancel</button>
+                <button onclick="saveBrand()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm transition-colors">Save Brand</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="Brands.js"></script>
+
+   
+</body>
+</html>

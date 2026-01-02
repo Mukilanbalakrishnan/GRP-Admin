@@ -1,5 +1,5 @@
 // Point to the file inside src/pages/home/
-import { renderDashboard } from './src/components/Dashboard.js';
+import { renderDashboard } from './src/components/Dashboard/Dashboard.js';
 import { renderHome } from './src/pages/Home/Home.js';
 import { renderSidebar } from './src/components/Sidebar.js';
 import { renderservices } from './src/pages/services/services.js';
@@ -39,6 +39,10 @@ window.loadPage = async (pageName) => {
 
     switch (pageName) {
         case 'dashboard':
+            app.innerHTML = await fetch('./src/components/Dashboard/Dashboard.html')
+                .then(res => res.text());
+
+            // 2️⃣ THEN mount JS
             renderDashboard();
             break;
         case 'home':
