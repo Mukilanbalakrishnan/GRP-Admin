@@ -1,154 +1,12 @@
+// Authentication Check
+if (!localStorage.getItem('authToken')) {
+    window.location.href = '../login page/login.html';
+}
 
-export const renderGallery = () => {
-    return `
-    <div class="p-6 bg-gray-50 min-h-screen font-sans">
-    <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">Gallery <span class="text-gray-400 text-xl font-normal">List</span></h1>
-        <div class="flex items-center text-sm text-gray-500 mt-1">
-            <i data-lucide="home" class="w-4 h-4 mr-1"></i> <span class="mx-1">/</span> Gallery
-        </div>
-    </div>
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Icons
+    lucide.createIcons();
 
-    <!-- Toolbar -->
-    <div class="bg-white p-4 rounded-t-xl border-b border-gray-200 flex flex-wrap items-center justify-between gap-4 shadow-sm">
-        <div class="flex items-center gap-2">
-            <button id="add-image-btn" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded shadow-sm text-sm font-medium flex items-center gap-2 transition-colors">
-                <i data-lucide="plus" class="w-4 h-4"></i> New
-            </button>
-            
-            <button id="delete-selected-btn" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded shadow-sm text-sm font-medium flex items-center gap-2 transition-colors hidden">
-                <i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i> Delete Selected
-            </button>
-
-            <div class="relative group">
-                <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow-sm text-sm font-medium flex items-center gap-2 transition-colors">
-                    <i data-lucide="filter" class="w-4 h-4"></i> Filter
-                </button>
-                <!-- Dropdown (Simple implementation) -->
-                <div class="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 hidden group-hover:block z-10 p-2">
-                    <select id="gallery-filter" class="w-full border-none focus:ring-0 text-sm p-1 text-gray-600 bg-transparent">
-                        <option value="all">All Categories</option>
-                        <option value="Roofing">Roofing</option>
-                        <option value="Attic">Attic</option>
-                        <option value="Installation">Installation</option>
-                        <option value="Repair">Repair</option>
-                    </select>
-                </div>
-            </div>
-            
-            <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded shadow-sm text-sm font-medium flex items-center gap-2 transition-colors">
-                <i data-lucide="file-text" class="w-4 h-4"></i> Report
-            </button>
-        </div>
-
-        <div class="flex items-center gap-2">
-             <div class="relative">
-                <input type="text" id="gallery-search" placeholder="Search..." class="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64">
-                <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-2.5"></i>
-            </div>
-            <button class="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded shadow-sm hover:bg-gray-50 text-sm font-medium">
-                <i data-lucide="download" class="w-4 h-4"></i> Export
-            </button>
-        </div>
-    </div>
-
-    <!-- Table -->
-    <div class="bg-white rounded-b-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-gray-50 border-b border-gray-200 text-xs uppercase text-gray-500 font-semibold tracking-wider">
-                        <th class="px-6 py-4 w-12 text-center">
-                            <input type="checkbox" id="select-all" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        </th>
-                        <th class="px-6 py-4 cursor-pointer hover:bg-gray-100 transition-colors group">
-                            ID <i data-lucide="arrow-up-down" class="w-3 h-3 inline-block ml-1 text-gray-300 group-hover:text-gray-500"></i>
-                        </th>
-                        <th class="px-6 py-4">Image</th>
-                        <th class="px-6 py-4">Title / Description</th>
-                        <th class="px-6 py-4">Category</th>
-                        <th class="px-6 py-4">Created Date</th>
-                        <th class="px-6 py-4 text-right">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="gallery-table-body" class="divide-y divide-gray-100 text-sm text-gray-700">
-                    <!-- Rows injected via JS -->
-                </tbody>
-            </table>
-        </div>
-        
-        <!-- Pagination -->
-        <div class="bg-white px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-            <div class="text-xs text-gray-500">
-                Showing <span class="font-medium text-gray-900">1</span> to <span class="font-medium text-gray-900" id="page-count">10</span> of <span class="font-medium text-gray-900" id="total-count">20</span> results
-            </div>
-            <div class="flex items-center gap-2">
-                <button class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 text-gray-600 disabled:opacity-50 text-xs font-medium">Previous</button>
-                <button class="px-3 py-1 bg-blue-50 border border-blue-500 text-blue-600 rounded text-xs font-medium">1</button>
-                <button class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 text-gray-600 text-xs font-medium">2</button>
-                <button class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 text-gray-600 text-xs font-medium">3</button>
-                <button class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 text-gray-600 disabled:opacity-50 text-xs font-medium">Next</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Empty State (Hidden by default) -->
-    <div id="gallery-empty" class="hidden flex flex-col items-center justify-center py-24 text-gray-400 bg-white rounded-b-xl border border-t-0 border-gray-200">
-        <i data-lucide="inbox" class="w-16 h-16 mb-4 text-gray-200"></i>
-        <p class="text-sm">No records found</p>
-    </div>
-
-    <!-- Modal (Same as before) -->
-    <div id="gallery-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md transform transition-all scale-100 animate-in fade-in zoom-in duration-200">
-            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-lg">
-                <h3 id="modal-title" class="text-lg font-bold text-gray-800">Add New Record</h3>
-                <button id="close-modal-btn" class="text-gray-400 hover:text-red-500 transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-            
-            <form id="gallery-form" class="p-6 space-y-5">
-                <input type="hidden" id="image-id">
-                
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Image URL</label>
-                    <input type="url" id="image-url" required placeholder="https://example.com/image.jpg" 
-                        class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-colors">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Title</label>
-                    <input type="text" id="image-title" required placeholder="Image Title" 
-                        class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-colors">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Category</label>
-                    <div class="relative">
-                        <select id="image-category" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded text-sm focus:outline-none focus:border-blue-500 focus:bg-white transition-colors appearance-none">
-                            <option value="Roofing">Roofing</option>
-                            <option value="Attic">Attic</option>
-                            <option value="Installation">Installation</option>
-                            <option value="Repair">Repair</option>
-                        </select>
-                         <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 absolute right-3 top-2.5 pointer-events-none"></i>
-                    </div>
-                </div>
-
-                <div class="pt-4 flex justify-end gap-3 border-t border-gray-100 mt-4">
-                    <button type="button" id="cancel-btn" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded text-sm font-medium transition-colors">Cancel</button>
-                    <button type="submit" class="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded text-sm font-bold shadow-sm shadow-emerald-200 transition-all transform active:scale-95">Save</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-    `;
-};
-
-export const setupGalleryInteractions = () => {
     const tableBody = document.getElementById('gallery-table-body');
     const emptyState = document.getElementById('gallery-empty');
     const modal = document.getElementById('gallery-modal');
@@ -160,8 +18,16 @@ export const setupGalleryInteractions = () => {
     const filterSelect = document.getElementById('gallery-filter');
     const selectAllCheckbox = document.getElementById('select-all');
     const deleteSelectedBtn = document.getElementById('delete-selected-btn');
-    const totalCountSpan = document.getElementById('total-count'); // Assuming you add this ID to the pagination total
-    const pageCountSpan = document.getElementById('page-count'); // Assuming you add this ID
+    const totalCountSpan = document.getElementById('total-count');
+    const pageCountSpan = document.getElementById('page-count');
+
+    // File inputs
+    const fileInput = document.getElementById('image-file');
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewImage = document.getElementById('image-preview');
+    const fileNameSpan = document.getElementById('file-name');
+    const removeFileBtn = document.getElementById('remove-file-btn');
+    const dropZone = document.getElementById('drop-zone');
 
     // State
     let galleryData = JSON.parse(localStorage.getItem('galleryData')) || [
@@ -170,10 +36,18 @@ export const setupGalleryInteractions = () => {
         { id: '3', url: 'https://images.unsplash.com/photo-1596256860361-b952c87ba9b6?q=80&w=600&auto=format&fit=crop', title: 'Solar Panel Update', category: 'Installation', date: '2024-03-05' },
     ];
 
+    // We need to store the "current editing URL" to persist it if no new file is uploaded
+    let currentEditUrl = '';
+
     // Helper: Save to LocalStorage
     const save = () => {
-        localStorage.setItem('galleryData', JSON.stringify(galleryData));
-        render();
+        try {
+            localStorage.setItem('galleryData', JSON.stringify(galleryData));
+            render();
+        } catch (e) {
+            alert('Storage full! Image might be too large.');
+            console.error(e);
+        }
     };
 
     // Helper: Format Date
@@ -181,6 +55,47 @@ export const setupGalleryInteractions = () => {
         if (!dateString) return 'N/A';
         return new Date(dateString).toISOString().slice(0, 19).replace('T', ' ');
     };
+
+    // Helper: Read File as Base64
+    const readFile = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // File Input Handlers
+    const updatePreview = (src, name) => {
+        if (src) {
+            previewImage.src = src;
+            fileNameSpan.innerText = name || 'Uploaded Image';
+            previewContainer.classList.remove('hidden');
+        } else {
+            previewContainer.classList.add('hidden');
+            fileInput.value = ''; // Reset input
+        }
+    }
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            readFile(file).then(url => {
+                updatePreview(url, file.name);
+            });
+        }
+    });
+
+    removeFileBtn.addEventListener('click', () => {
+        updatePreview(null);
+        fileInput.value = ''; // Clear file input
+        // If editing, we might want to revert to the original URL or clear it? 
+        // For simplicity, clearing means "no change" if editing, or "no image" if new.
+        if (document.getElementById('image-id').value) {
+            updatePreview(currentEditUrl, 'Current Image');
+        }
+    });
 
     // Helper: Render Table
     const render = () => {
@@ -194,15 +109,15 @@ export const setupGalleryInteractions = () => {
         });
 
         if (totalCountSpan) totalCountSpan.innerText = filtered.length;
-        if (pageCountSpan) pageCountSpan.innerText = filtered.length; // Simply showing total for now
+        if (pageCountSpan) pageCountSpan.innerText = filtered.length;
 
         if (filtered.length === 0) {
             tableBody.innerHTML = '';
-            tableBody.closest('table').classList.add('hidden'); // Hide table header if empty
+            tableBody.closest('table')?.classList.add('hidden');
             emptyState.classList.remove('hidden');
         } else {
             emptyState.classList.add('hidden');
-            tableBody.closest('table').classList.remove('hidden');
+            tableBody.closest('table')?.classList.remove('hidden');
 
             tableBody.innerHTML = filtered.map(item => `
                 <tr class="hover:bg-gray-50 transition-colors group">
@@ -246,7 +161,6 @@ export const setupGalleryInteractions = () => {
                 </tr>
             `).join('');
 
-            // Re-initialize icons
             if (window.lucide) window.lucide.createIcons();
         }
 
@@ -267,26 +181,21 @@ export const setupGalleryInteractions = () => {
         }
     };
 
-    // Select All Logic
     selectAllCheckbox.addEventListener('change', (e) => {
         const checkboxes = document.querySelectorAll('.row-checkbox');
         checkboxes.forEach(cb => cb.checked = e.target.checked);
         updateBulkActionState();
     });
 
-    // Delegate row checkbox change
     tableBody.addEventListener('change', (e) => {
         if (e.target.classList.contains('row-checkbox')) {
             updateBulkActionState();
-
-            // Update Select All Checkbox state
             const allCheckboxes = document.querySelectorAll('.row-checkbox');
             const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
             selectAllCheckbox.checked = allChecked;
         }
     });
 
-    // Delete Selected
     deleteSelectedBtn.addEventListener('click', () => {
         const checkboxes = document.querySelectorAll('.row-checkbox:checked');
         const idsToDelete = Array.from(checkboxes).map(cb => cb.value);
@@ -298,69 +207,81 @@ export const setupGalleryInteractions = () => {
         }
     });
 
-
-    // Modal Handling
     const openModal = (isEdit = false, id = null) => {
         modal.classList.remove('hidden');
         if (isEdit) {
             const item = galleryData.find(d => d.id === id);
             document.getElementById('modal-title').innerText = 'Edit Record';
             document.getElementById('image-id').value = item.id;
-            document.getElementById('image-url').value = item.url;
+
+            // Set current URL logic
+            currentEditUrl = item.url;
+            updatePreview(item.url, 'Current Image');
+
             document.getElementById('image-title').value = item.title;
             document.getElementById('image-category').value = item.category;
         } else {
             document.getElementById('modal-title').innerText = 'New Record';
             form.reset();
             document.getElementById('image-id').value = '';
+            currentEditUrl = '';
+            updatePreview(null);
         }
     };
 
     const closeModal = () => {
         modal.classList.add('hidden');
         form.reset();
+        updatePreview(null);
     };
 
-    // Event Listeners
     addBtn.addEventListener('click', () => openModal(false));
     closeBtn.addEventListener('click', closeModal);
     cancelBtn.addEventListener('click', closeModal);
 
-    // Close on click outside
     modal.addEventListener('click', (e) => {
         if (e.target === modal) closeModal();
     });
 
-    // Form Submit
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('image-id').value;
-        const url = document.getElementById('image-url').value;
         const title = document.getElementById('image-title').value;
         const category = document.getElementById('image-category').value;
         const date = new Date().toISOString();
 
+        let url = currentEditUrl;
+
+        // Check if new file uploaded
+        if (fileInput.files.length > 0) {
+            try {
+                url = await readFile(fileInput.files[0]);
+            } catch (err) {
+                console.error("Error reading file", err);
+                alert("Failed to read file");
+                return;
+            }
+        } else if (!url && !id) {
+            alert("Please upload an image");
+            return;
+        }
+
         if (id) {
-            // Edit
             const index = galleryData.findIndex(item => item.id === id);
             if (index !== -1) {
-                galleryData[index] = { ...galleryData[index], url, title, category }; // Keep original date
+                galleryData[index] = { ...galleryData[index], url, title, category };
             }
         } else {
-            // Add
             const newId = (galleryData.length > 0 ? Math.max(...galleryData.map(i => parseInt(i.id))) + 1 : 1).toString();
             galleryData.push({ id: newId, url, title, category, date });
         }
-
         save();
         closeModal();
     });
 
-    // Filter & Search
     searchInput.addEventListener('input', render);
     filterSelect.addEventListener('change', render);
 
-    // Global Handlers for inline buttons
     window.editImage = (id) => openModal(true, id);
     window.deleteImage = (id) => {
         if (confirm('Are you sure you want to delete this record?')) {
@@ -369,6 +290,12 @@ export const setupGalleryInteractions = () => {
         }
     };
 
-    // Initial Render
+    window.logout = () => {
+        if (confirm('Are you sure you want to log out?')) {
+            localStorage.removeItem('authToken');
+            window.location.href = '../login page/login.html';
+        }
+    };
+
     render();
-};
+});

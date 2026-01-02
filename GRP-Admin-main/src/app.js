@@ -26,15 +26,15 @@ function renderSidebar() {
             <button onclick="loadPage('home')" class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
                 <i data-lucide="layout-template" class="w-5 h-5 mr-3"></i> Home Page
             </button>
-            <button onclick="loadPage('about')" class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
+            <a href="src/pages/hero/About us/aboutus.html" class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
                 <i data-lucide="info" class="w-5 h-5 mr-3"></i> About Us
-            </button>
-            <button onclick="loadPage('services')" class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
+            </a>
+            <a href="src/pages/hero/services/services.html" class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
                 <i data-lucide="briefcase" class="w-5 h-5 mr-3"></i> Services
-            </button>
-            <button onclick="loadPage('gallery')" class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
+            </a>
+            <a href="src/pages/hero/gallery/gallery.html" class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
                 <i data-lucide="image" class="w-5 h-5 mr-3"></i> Gallery
-            </button>
+            </a>
             <button onclick="loadPage('contact')" class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
                 <i data-lucide="mail" class="w-5 h-5 mr-3"></i> Contact
             </button>
@@ -1310,8 +1310,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Inject Sidebar
     document.getElementById('sidebar-container').innerHTML = renderSidebar();
 
-    // 2. Load 'dashboard' by default
-    loadPage('dashboard');
+    // 2. Load page based on URL param or default to 'dashboard'
+    const urlParams = new URLSearchParams(window.location.search);
+    const page = urlParams.get('page') || 'dashboard';
+    loadPage(page);
 
     if (window.lucide) window.lucide.createIcons();
     setupNavigation();
