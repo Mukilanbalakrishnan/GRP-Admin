@@ -1,93 +1,297 @@
-// Point to the file inside src/pages/home/
+// // =======================
+// // IMPORTS
+// // =======================
+// import { renderDashboard } from './src/components/Dashboard/Dashboard.js';
+// import { renderHome } from './src/pages/Home/Home.js';
+// import { renderSidebar } from './src/components/Sidebar.js';
+// import { renderservices } from './src/pages/services/services.js';
+// import { renderabout } from './src/pages/About_us/aboutus.js';
+// import { rendergallery } from './src/pages/gallery/gallery.js';
+// import { renderLogin } from './src/pages/Login/login.js';
+
+// // =======================
+// // AUTH HELPERS
+// // =======================
+// function isAuthenticated() {
+//     const token = localStorage.getItem("authToken");
+//     const expiry = localStorage.getItem("authExpiry");
+
+//     if (!token || !expiry) return false;
+//     if (Date.now() > Number(expiry)) {
+//         logout();
+//         return false;
+//     }
+//     return true;
+// }
+
+// // =======================
+// // ROUTER
+// // =======================
+// async function router() {
+//     const app = document.getElementById('app');
+//     const sidebarContainer = document.getElementById('sidebar-container');
+//     const pageTitle = document.getElementById('page-title');
+
+//     const hash = window.location.hash || '#/login';
+//     const loggedIn = isAuthenticated();
+
+//     // 🔐 Route protection
+//     if (!loggedIn && hash !== '#/login') {
+//         window.location.hash = '#/login';
+//         return;
+//     }
+
+//     if (loggedIn && hash === '#/login') {
+//         window.location.hash = '#/dashboard';
+//         return;
+//     }
+
+//     // Clear UI
+//     app.innerHTML = '';
+//     sidebarContainer.innerHTML = '';
+
+//     // =======================
+//     // ROUTES
+//     // =======================
+//     switch (hash) {
+//         case '#/login':
+//     pageTitle.textContent = 'Admin Login';
+
+//     // 1️⃣ Inject login HTML
+//     app.innerHTML = await fetch('./src/pages/Login/login.html')
+//         .then(r => r.text());
+
+//     // 2️⃣ Bind JS + animation
+//     renderLogin(app);
+//     break;
+
+
+//         case '#/dashboard':
+//     sidebarContainer.innerHTML = renderSidebar('dashboard');
+//     pageTitle.textContent = 'Dashboard';
+
+//     // 1️⃣ Inject HTML
+//     app.innerHTML = await fetch('./src/components/Dashboard/Dashboard.html')
+//         .then(res => res.text());
+
+//     // 2️⃣ Mount JS
+//     renderDashboard();
+//     break;
+
+
+//         case '#/home':
+//             sidebarContainer.innerHTML = renderSidebar('home');
+//             pageTitle.textContent = 'Home';
+//             renderHome();
+//             break;
+
+//         case '#/services':
+//             sidebarContainer.innerHTML = renderSidebar('services');
+//             pageTitle.textContent = 'Services';
+//             app.innerHTML = await fetch('./src/pages/services/services.html').then(r => r.text());
+//             renderservices();
+//             break;
+
+//         case '#/about':
+//             sidebarContainer.innerHTML = renderSidebar('about');
+//             pageTitle.textContent = 'About Us';
+//             app.innerHTML = await fetch('./src/pages/About_us/aboutus.html').then(r => r.text());
+//             renderabout();
+//             break;
+
+//         case '#/gallery':
+//             sidebarContainer.innerHTML = renderSidebar('gallery');
+//             pageTitle.textContent = 'Gallery';
+//             app.innerHTML = await fetch('./src/pages/gallery/gallery.html').then(r => r.text());
+//             rendergallery();
+//             break;
+
+//         default:
+//             window.location.hash = '#/login';
+//     }
+
+//     lucide.createIcons();
+// }
+
+// // =======================
+// // LOGOUT (GLOBAL)
+// // =======================
+// window.logout = function () {
+//     localStorage.removeItem("authToken");
+//     localStorage.removeItem("authExpiry");
+//     window.location.hash = '#/login';
+// };
+
+// // =======================
+// // SIDEBAR NAV HANDLER
+// // =======================
+// window.handleNavigation = (pageId) => {
+//     window.location.hash = `#/${pageId}`;
+// };
+
+// // =======================
+// // INIT
+// // =======================
+// window.addEventListener('hashchange', router);
+// window.addEventListener('DOMContentLoaded', router);
+
+
+
+
+
+// =======================
+// IMPORTS
+// =======================
 import { renderDashboard } from './src/components/Dashboard/Dashboard.js';
 import { renderHome } from './src/pages/Home/Home.js';
 import { renderSidebar } from './src/components/Sidebar.js';
 import { renderservices } from './src/pages/services/services.js';
 import { renderabout } from './src/pages/About_us/aboutus.js';
 import { rendergallery } from './src/pages/gallery/gallery.js';
+import { renderLogin } from './src/pages/Login/login.js';
 
-// 🔐 AUTH GUARD — must be first
-if (!localStorage.getItem('authToken')) {
-    window.location.href = './login.html';
+// =======================
+// AUTH HELPERS
+// =======================
+function isAuthenticated() {
+    const token = localStorage.getItem("authToken");
+    const expiry = localStorage.getItem("authExpiry");
+
+    if (!token || !expiry) return false;
+
+    if (Date.now() > Number(expiry)) {
+        logout();
+        return false;
+    }
+    return true;
 }
 
+// =======================
+// ROUTER
+// =======================
+async function router() {
+    const app = document.getElementById('app');
+    const sidebarContainer = document.getElementById('sidebar-container');
+    const pageTitle = document.getElementById('page-title');
 
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Render Sidebar
-    document.querySelector('#sidebar-container').innerHTML = renderSidebar();
+    const hash = window.location.hash || '#/login';
+    const loggedIn = isAuthenticated();
 
-    // 2. Decide FIRST PAGE
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-
-    if (isLoggedIn) {
-        renderDashboard();   // ✅ Dashboard first
-    } else {
-        renderHome();        // ❌ Only if not logged in
+    // 🔐 Route protection
+    if (!loggedIn && hash !== '#/login') {
+        window.location.hash = '#/login';
+        return;
     }
 
-    // 3. Initialize Icons
-    lucide.createIcons();
+    if (loggedIn && hash === '#/login') {
+        window.location.hash = '#/dashboard';
+        return;
+    }
 
-    // 4. Sidebar Logic
-    setupSidebarInteractions();
+    // Mobile menu button
+document.addEventListener('click', (e) => {
+    if (e.target.closest('#mobile-menu-btn')) {
+        document.body.classList.add('sidebar-open');
+    }
 });
 
-// ---------------- ROUTER ----------------
-window.loadPage = async (pageName) => {
-    const app = document.getElementById('app');
-    app.innerHTML = '';
+window.toggleSidebar = (open) => {
+    if (open) {
+        document.body.classList.add('sidebar-open');
+    } else {
+        document.body.classList.remove('sidebar-open');
+    }
+};
 
-    switch (pageName) {
-        case 'dashboard':
+
+    // 🔄 RESET UI
+    app.innerHTML = '';
+    sidebarContainer.innerHTML = '';
+    pageTitle.textContent = '';
+
+    // 🔄 RESET MODE
+    document.body.classList.remove('login-mode');
+
+    switch (hash) {
+
+        // =======================
+        // LOGIN (FULL SCREEN)
+        // =======================
+        case '#/login':
+            document.body.classList.add('login-mode');
+
+            app.innerHTML = await fetch('./src/pages/Login/login.html')
+                .then(r => r.text());
+
+            // bind JS + canvas
+            renderLogin(document);
+            return; // ⛔ STOP HERE
+
+        // =======================
+        // DASHBOARD
+        // =======================
+        case '#/dashboard':
+            sidebarContainer.innerHTML = renderSidebar('dashboard');
+            pageTitle.textContent = 'Dashboard';
+
             app.innerHTML = await fetch('./src/components/Dashboard/Dashboard.html')
                 .then(res => res.text());
 
-            // 2️⃣ THEN mount JS
             renderDashboard();
             break;
-        case 'home':
+
+        case '#/home':
+            sidebarContainer.innerHTML = renderSidebar('home');
+            pageTitle.textContent = 'Home';
             renderHome();
             break;
-        
-        case 'services':
-             const res = await fetch('./src/pages/services/services.html');
-            app.innerHTML = await res.text();
+
+        case '#/services':
+            sidebarContainer.innerHTML = renderSidebar('services');
+            pageTitle.textContent = 'Services';
+            app.innerHTML = await fetch('./src/pages/services/services.html').then(r => r.text());
             renderservices();
             break;
-        case 'about':
-            // 1️⃣ Inject HTML first
-            app.innerHTML = await fetch('./src/pages/About_us/aboutus.html')
-                .then(res => res.text());
 
-            // 2️⃣ THEN mount JS
+        case '#/about':
+            sidebarContainer.innerHTML = renderSidebar('about');
+            pageTitle.textContent = 'About Us';
+            app.innerHTML = await fetch('./src/pages/About_us/aboutus.html').then(r => r.text());
             renderabout();
             break;
-        case 'gallery':
-            // 1️⃣ Inject HTML first
-            app.innerHTML = await fetch('./src/pages/gallery/gallery.html')
-                .then(res => res.text());
 
-            // 2️⃣ THEN mount JS
+        case '#/gallery':
+            sidebarContainer.innerHTML = renderSidebar('gallery');
+            pageTitle.textContent = 'Gallery';
+            app.innerHTML = await fetch('./src/pages/gallery/gallery.html').then(r => r.text());
             rendergallery();
             break;
+
         default:
-            renderDashboard(); // ✅ safer default
+            window.location.hash = '#/login';
     }
 
     lucide.createIcons();
+}
+
+// =======================
+// LOGOUT
+// =======================
+window.logout = function () {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("authExpiry");
+    window.location.hash = '#/login';
 };
 
-// ---------------- SIDEBAR ----------------
-function setupSidebarInteractions() {
-    const sidebar = document.getElementById('sidebar');
-    const openBtn = document.getElementById('mobile-menu-btn');
+// =======================
+// SIDEBAR NAV
+// =======================
+window.handleNavigation = (pageId) => {
+    window.location.hash = `#/${pageId}`;
+};
 
-    window.toggleSidebar = (show) => {
-        if (!sidebar) return;
-        sidebar.classList.toggle('-translate-x-full', !show);
-    };
-
-    if (openBtn) {
-        openBtn.addEventListener('click', () => toggleSidebar(true));
-    }
-}
+// =======================
+// INIT
+// =======================
+window.addEventListener('hashchange', router);
+window.addEventListener('DOMContentLoaded', router);

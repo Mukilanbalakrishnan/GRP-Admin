@@ -14,23 +14,29 @@
         /* ============================
            INITIAL DATA
         ============================ */
-        let servicesData = [
-            {
-                title: "Industrial Roofing",
-                desc: "Heavy-duty metal and composite roofing",
-                image: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=200&auto=format&fit=crop"
-            }
-        ];
+        let servicesData = [];
 
         /* ============================
            INIT
         ============================ */
+
+        function fetchServices() {
+  fetch("http://localhost/GRP-Backend/api/services/service-list.php")
+    .then(res => res.json())
+    .then(data => {
+      servicesData = data;
+      renderServices();
+    })
+    .catch(err => console.error("Service fetch error:", err));
+}
+
         document.addEventListener('DOMContentLoaded', () => {
-            renderServices();
-            lucide.createIcons();
-            setupFileUpload();
-            setupInputListeners();
-        });
+    fetchServices();   // load from backend
+    lucide.createIcons();
+    setupFileUpload();
+    setupInputListeners();
+});
+
 
         /* ============================
            RENDER SERVICES GRID
@@ -54,14 +60,15 @@
                 const gradient = GRADIENTS[index % GRADIENTS.length];
 
                 const card = document.createElement('div');
-                card.className = `service-card bg-white p-6 rounded-xl shadow-sm border border-gray-200 animate-fade-in-up`;
+                card.className = `service-card group bg-white p-6 rounded-xl shadow-sm border border-gray-200 animate-fade-in-up`;
+
                 card.style.animationDelay = `${index * 0.1}s`;
 
                 card.innerHTML = `
                     <div class="flex items-start justify-between mb-4">
                         <div class="w-16 h-16 rounded-xl p-[2px] bg-gradient-to-br ${gradient} shadow-md group">
                             <div class="w-full h-full rounded-[10px] overflow-hidden bg-white">
-                                <img src="${service.image}" alt="${service.title}" class="w-full h-full object-cover">
+                                <img src="http://localhost/GRP-Backend/${service.image_path}"alt="${service.title}" class="w-full h-full object-cover">
                             </div>
                         </div>
 
@@ -69,14 +76,14 @@
                             <button onclick="editService(${index})" class="p-2 bg-gray-100 hover:bg-blue-50 text-gray-500 hover:text-blue-600 rounded-lg transition-colors" title="Edit">
                                 <i data-lucide="pencil" class="w-4 h-4"></i>
                             </button>
-                            <button onclick="deleteService(${index})" class="p-2 bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-600 rounded-lg transition-colors" title="Delete">
+                            <button onclick="deleteService(${service.id})" class="p-2 bg-gray-100 hover:bg-red-50 text-gray-500 hover:text-red-600 rounded-lg transition-colors" title="Delete">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
                     </div>
 
                     <h3 class="text-lg font-bold text-gray-800 mb-2">${service.title}</h3>
-                    <p class="text-sm text-gray-500 leading-relaxed">${service.desc}</p>
+                    <p class="text-sm text-gray-500 leading-relaxed">${service.description}</p>
                     
                     <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
                         <span class="text-xs text-gray-400">Slide ${index + 1}</span>
@@ -106,21 +113,23 @@
 
             const isEdit = index !== null;
             document.getElementById('modal-title').textContent = isEdit ? 'Edit Service' : 'Add New Service';
-            document.getElementById('service-index').value = index ?? -1;
+            document.getElementById('service-index').value = isEdit ? servicesData[index].id : -1;
+
             
             if (isEdit) {
-                const data = servicesData[index];
-                document.getElementById('input-title').value = data.title;
-                document.getElementById('input-desc').value = data.desc;
-                document.getElementById('input-image').value = data.image;
-                updateImagePreview(data.image);
-            } else {
-                document.getElementById('input-title').value = '';
-                document.getElementById('input-desc').value = '';
-                document.getElementById('input-image').value = '';
-                document.getElementById('input-image-file').value = ''; // Reset file input
-                updateImagePreview('');
-            }
+  const data = servicesData[index];
+  document.getElementById('input-title').value = data.title;
+  document.getElementById('input-desc').value = data.description;
+
+  // show existing image from backend
+  updateImagePreview(`http://localhost/GRP-Backend/${data.image_path}`);
+} else {
+  document.getElementById('input-title').value = '';
+  document.getElementById('input-desc').value = '';
+  document.getElementById('input-image-file').value = '';
+  updateImagePreview('');
+}
+
             
             updateCharCount();
         };
@@ -175,28 +184,23 @@
         }
 
         function handleFile(file) {
-            if (!file.type.startsWith('image/')) {
-                alert("Please upload an image file.");
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const result = e.target.result;
-                document.getElementById('input-image').value = result; // Set URL Input to Base64
-                updateImagePreview(result);
-            };
-            reader.readAsDataURL(file);
-        }
+  if (!file.type.startsWith("image/")) {
+    alert("Please upload an image file");
+    return;
+  }
 
-        function setupInputListeners() {
-            // Live preview from URL input
-            document.getElementById('input-image').addEventListener('input', (e) => {
-                updateImagePreview(e.target.value);
-            });
+  const previewURL = URL.createObjectURL(file);
+  updateImagePreview(previewURL);
+}
 
-            // Character count
-            document.getElementById('input-desc').addEventListener('input', updateCharCount);
-        }
+
+       function setupInputListeners() {
+  const descInput = document.getElementById('input-desc');
+  if (descInput) {
+    descInput.addEventListener('input', updateCharCount);
+  }
+}
+
 
         function updateImagePreview(src) {
             const container = document.getElementById('image-preview-container');
@@ -219,35 +223,59 @@
            SAVE & DELETE
         ============================ */
         window.saveService = function () {
-            const title = document.getElementById('input-title').value.trim();
-            const desc = document.getElementById('input-desc').value.trim();
-            const image = document.getElementById('input-image').value.trim();
-            const index = parseInt(document.getElementById('service-index').value);
+  const title = document.getElementById('input-title').value.trim();
+  const desc = document.getElementById('input-desc').value.trim();
+  const fileInput = document.getElementById('input-image-file');
+  const id = document.getElementById('service-index').value;
 
-            if (!title || !desc || !image) {
-                alert("Please fill in Title, Description, and provide an Image.");
-                return;
-            }
+  if (!title || !desc) {
+    alert("Title and description required");
+    return;
+  }
 
-            const newData = { title, desc, image };
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("description", desc);
 
-            if (index >= 0) {
-                servicesData[index] = newData;
-            } else {
-                servicesData.push(newData);
-            }
+  if (fileInput.files.length > 0) {
+    formData.append("image", fileInput.files[0]);
+  }
 
-            renderServices();
-            closeModal();
-            console.log("Services Data:", servicesData);
-        };
+  const url = id !== "-1"
+    ? "http://localhost/GRP-Backend/api/services/service-update.php"
+    : "http://localhost/GRP-Backend/api/services/service-upload.php";
 
-        window.deleteService = function(index) {
-            if(confirm("Are you sure you want to delete this service?")) {
-                servicesData.splice(index, 1);
-                renderServices();
-            }
-        };
+  if (id !== "-1") formData.append("id", id);
+
+  fetch(url, { method: "POST", body: formData })
+    .then(res => res.json())
+    .then(resp => {
+      if (!resp.status) {
+        alert("Failed to save service");
+        return;
+      }
+      closeModal();
+      fetchServices();
+    });
+};
+
+
+        window.deleteService = function(id) {
+  if (!confirm("Delete this service?")) return;
+
+  const fd = new FormData();
+  fd.append("id", id);
+
+  fetch("http://localhost/GRP-Backend/api/services/service-delete.php", {
+    method: "POST",
+    body: fd
+  })
+    .then(res => res.json())
+    .then(resp => {
+      if (resp.status) fetchServices();
+    });
+};
+
 
         /* ============================
            NAVIGATION

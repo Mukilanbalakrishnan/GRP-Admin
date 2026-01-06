@@ -28,37 +28,17 @@ export function renderabout(){
 }
 
     // State
-    let reviewsData = JSON.parse(localStorage.getItem('clientReviews')) || [
-        {
-            id: '1',
-            name: 'David Brown',
-            role: 'Verified Client',
-            text: 'They helped us scale our MVP into a full-fledged product. Their technical guidance was invaluable.',
-            image: ''
-        }
+    let reviewsData  =[
+        
     ];
 
     let currentEditImage = '';
 
     // Save Helper
-    const save = () => {
-        try {
-            localStorage.setItem('clientReviews', JSON.stringify(reviewsData));
-            render();
-        } catch (e) {
-            alert('Storage Link Error: Image size might be too big.');
-        }
-    };
+    
 
     // File Reading
-    const readFile = (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    };
+    
 
     // Preview Helper
     const setPreview = (src) => {
@@ -73,18 +53,16 @@ export function renderabout(){
         }
     };
 
-    fileInput && fileInput.addEventListener('change', async (e) => {
+    fileInput && fileInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) {
+        const file = e.target.files[0];
 
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            try {
-                const url = await readFile(file);
-                setPreview(url);
-            } catch (err) {
-                console.error(err);
-            }
-        }
-    });
+        // 🔥 Local preview only (no upload yet)
+        const previewUrl = URL.createObjectURL(file);
+        setPreview(previewUrl);
+    }
+});
+
 
     // Render Grid
     const render = () => {
@@ -109,7 +87,8 @@ export function renderabout(){
                     <div class="w-full md:w-1/3 shrink-0">
                         <div class="aspect-square rounded-lg bg-gray-100 overflow-hidden relative">
                              ${review.image
-                    ? `<img src="${review.image}" class="w-full h-full object-cover" alt="${review.name}">`
+                    ? `<img src="${review.image ? `http://localhost/GRP-Backend/${review.image}` : ''}">
+ class="w-full h-full object-cover" alt="${review.name}">`
                     : `<div class="w-full h-full flex items-center justify-center text-gray-300"><i data-lucide="user" class="w-12 h-12"></i></div>`
                 }
                         </div>
@@ -148,7 +127,8 @@ export function renderabout(){
             document.getElementById('review-text').value = item.text;
 
             currentEditImage = item.image;
-            setPreview(item.image);
+            setPreview(item.image ? `http://localhost/GRP-Backend/${item.image}` : null);
+
         } else {
             document.getElementById('review-modal-title').innerText = 'New Review';
             form.reset();
@@ -173,49 +153,75 @@ cancelBtn && cancelBtn.addEventListener('click', closeModal);
 });
 
 
-    form && form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-        e.preventDefault();
-        const id = document.getElementById('review-id').value;
-        const name = document.getElementById('review-name').value;
-        const role = document.getElementById('review-role').value;
-        const text = document.getElementById('review-text').value;
+    const id = document.getElementById('review-id').value;
 
-        let image = currentEditImage;
+    const fd = new FormData();
+    fd.append("name", document.getElementById('review-name').value);
+    fd.append("role", document.getElementById('review-role').value);
+    fd.append("text", document.getElementById('review-text').value);
 
-        if (fileInput.files.length > 0) {
-            try {
-                image = await readFile(fileInput.files[0]);
-            } catch (err) {
-                console.error(err);
-                return;
-            }
+    if (fileInput.files[0]) {
+        fd.append("image", fileInput.files[0]);
+    }
+
+    let api = "about-create.php";
+    if (id) {
+        fd.append("id", id);
+        api = "about-update.php";
+    }
+
+    fetch(`http://localhost/GRP-Backend/api/about/${api}`, {
+        method: "POST",
+        body: fd
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (!res.status) {
+            alert(res.message);
+            return;
         }
-
-        if (id) {
-            const index = reviewsData.findIndex(r => r.id === id);
-            if (index !== -1) reviewsData[index] = { ...reviewsData[index], name, role, text, image };
-        } else {
-            const newId = Date.now().toString();
-            reviewsData.push({ id: newId, name, role, text, image });
-        }
-
-        save();
         closeModal();
+        fetchReviews();
     });
+});
+
+
+
+function fetchReviews() {
+    fetch("http://localhost/GRP-Backend/api/about/about-list.php")
+        .then(res => res.json())
+        .then(data => {
+            reviewsData = data;
+            render();
+        });
+}
+
+
 
     // Global Handlers (attached to window for onclick HTML attributes)
     window.editReview = (id) => openModal(true, id);
     window.deleteReview = (id) => {
-        if (confirm('Delete this review?')) {
-            reviewsData = reviewsData.filter(r => r.id !== id);
-            save();
-        }
-    };
+    if (!confirm("Delete this review?")) return;
+
+    const fd = new FormData();
+    fd.append("id", id);
+
+    fetch("http://localhost/GRP-Backend/api/about/about-delete.php", {
+        method: "POST",
+        body: fd
+    })
+    .then(r => r.json())
+    .then(() => fetchReviews());
+};
+
 
     
 
-    render();
+    fetchReviews();
+
 
 }
 

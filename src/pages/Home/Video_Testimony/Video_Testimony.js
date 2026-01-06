@@ -1,40 +1,7 @@
 
     // 1. Initial Data (Based on your provided code)
-    let testimonialData = [
-        { 
-            id: 1, 
-            name: "Robert Fox", 
-            role: "Factory Manager", 
-            title: "Industrial Roofing", 
-            videoUrl: "https://youtube.com/shorts/6gExsLRc8ow?si=r1619CbP1eeqm-Rs", 
-            thumbnail: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=400&auto=format&fit=crop", 
-            rating: 5, 
-            quote: "Saved us millions in maintenance", 
-            duration: "1:24" 
-        },
-        { 
-            id: 2, 
-            name: "Jane Cooper", 
-            role: "Homeowner", 
-            title: "Residential Roof", 
-            videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", 
-            thumbnail: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop", 
-            rating: 5, 
-            quote: "Home value increased by 15%", 
-            duration: "2:15" 
-        },
-        { 
-            id: 3, 
-            name: "Guy Hawkins", 
-            role: "Architect", 
-            title: "Perfect Match", 
-            videoUrl: "https://www.instagram.com/reel/C3_xyZqvK7a/", 
-            thumbnail: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=400&auto=format&fit=crop", 
-            rating: 4, 
-            quote: "Matched our architectural vision", 
-            duration: "0:45" 
-        },
-    ];
+    let testimonialData = [];
+
 
     // Helpers from your frontend code
     function isInstagram(url) { return url.includes("instagram.com"); }
@@ -48,13 +15,24 @@
         } catch(e){return null;} 
     }
 
+
+    function fetchTestimonials() {
+  fetch("http://localhost/GRP-Backend/api/video-testimonials/video-list.php")
+    .then(res => res.json())
+    .then(data => {
+      testimonialData = data;
+      renderGrid();
+      updateEmptyState();
+    });
+}
+
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
-        renderGrid();
-        lucide.createIcons();
-        setupEventListeners();
-        updateEmptyState();
-    });
+  fetchTestimonials();
+  lucide.createIcons();
+  setupEventListeners();
+});
+
 
     // --- RENDER GRID ---
     function renderGrid() {
@@ -83,7 +61,7 @@
             // card.style.opacity = '0';
             
             // Determine Icon type
-            const isInstagramVideo = isInstagram(item.videoUrl);
+            const isInstagramVideo = isInstagram(item.video_url);
             const platformIcon = isInstagramVideo 
                 ? `<div class="platform-badge bg-gradient-to-br from-pink-500 to-purple-600 text-white p-1.5 rounded-lg shadow-lg transform -translate-y-2">
                       <i data-lucide="instagram" class="w-3 h-3"></i>
@@ -118,12 +96,12 @@
         transition-all duration-300
         flex items-center justify-center gap-3">
 
-        <button onclick="editVideo(${index})"
+        <button onclick="editVideo(${item.id})"
             class="z-30 p-3 bg-white text-gray-700 rounded-full hover:bg-blue-50 hover:text-blue-600 shadow-lg">
             <i data-lucide="pencil" class="w-4 h-4"></i>
         </button>
 
-        <button onclick="deleteVideo(${index})"
+        <button onclick="deleteVideo(${item.id})"
             class="z-30 p-3 bg-white text-red-500 rounded-full hover:bg-red-50 hover:text-red-600 shadow-lg">
             <i data-lucide="trash-2" class="w-4 h-4"></i>
         </button>
@@ -145,7 +123,7 @@
                             <i data-lucide="clock" class="w-3 h-3"></i>
                             ${item.duration}
                         </span>
-                        <a href="${item.videoUrl}" 
+                        <a href="${item.video_url}" 
                            target="_blank" 
                            class="hover:text-blue-600 flex items-center gap-1 transition-all duration-300 action-btn">
                             Watch <i data-lucide="external-link" class="w-3 h-3"></i>
@@ -190,7 +168,7 @@
         
         if (isEdit) {
             const data = testimonialData[index];
-            document.getElementById('input-url').value = data.videoUrl;
+            document.getElementById('input-url').value = data.video_url;
             document.getElementById('input-name').value = data.name;
             document.getElementById('input-role').value = data.role;
             document.getElementById('input-title').value = data.title;
@@ -233,16 +211,13 @@
         setTimeout(() => modal.classList.add('hidden'), 300);
     }
     
-    function editVideo(index) {
-        // Add animation to the clicked card
-        const cards = document.querySelectorAll('.video-card');
-        if (cards[index]) {
-            cards[index].classList.add('animate-pulse-once');
-            setTimeout(() => cards[index].classList.remove('animate-pulse-once'), 300);
-        }
-        
-        openModal(index);
-    }
+    function editVideo(id) {
+  const index = testimonialData.findIndex(v => v.id == id);
+  if (index === -1) return;
+
+  openModal(index);
+}
+
 
     // --- PREVIEW LOGIC ---
     function previewThumbnail() {
@@ -327,98 +302,70 @@
 
     // --- SAVE / DELETE ---
     function saveVideo() {
-        const index = parseInt(document.getElementById('video-index').value);
-        
-        const newData = {
-            id: Date.now(),
-            videoUrl: document.getElementById('input-url').value.trim(),
-            name: document.getElementById('input-name').value.trim(),
-            role: document.getElementById('input-role').value.trim(),
-            title: document.getElementById('input-title').value.trim(),
-            quote: document.getElementById('input-quote').value.trim(),
-            rating: parseInt(document.getElementById('input-rating').value),
-            duration: document.getElementById('input-duration').value.trim(),
-            thumbnail: document.getElementById('input-thumbnail').value.trim()
-        };
+  const index = document.getElementById("video-index").value;
 
-        // Validation
-        if (!newData.videoUrl) {
-            showToast('Please enter a video URL', 'error');
-            document.getElementById('input-url').classList.add('animate-shake');
-            setTimeout(() => document.getElementById('input-url').classList.remove('animate-shake'), 300);
-            return;
-        }
-        
-        if (!newData.name) {
-            showToast('Please enter client name', 'error');
-            document.getElementById('input-name').classList.add('animate-shake');
-            setTimeout(() => document.getElementById('input-name').classList.remove('animate-shake'), 300);
-            return;
-        }
-        
-        if (!newData.thumbnail) {
-            showToast('Please add a thumbnail URL', 'error');
-            document.getElementById('input-thumbnail').classList.add('animate-shake');
-            setTimeout(() => document.getElementById('input-thumbnail').classList.remove('animate-shake'), 300);
-            return;
-        }
+  const fd = new FormData();
+  fd.append("name", document.getElementById("input-name").value.trim());
+  fd.append("role", document.getElementById("input-role").value.trim());
+  fd.append("title", document.getElementById("input-title").value.trim());
+  fd.append("video_url", document.getElementById("input-url").value.trim());
+  fd.append("rating", document.getElementById("input-rating").value);
+  fd.append("quote", document.getElementById("input-quote").value.trim());
+  fd.append("duration", document.getElementById("input-duration").value.trim());
+  fd.append("thumbnail", document.getElementById("input-thumbnail").value.trim());
 
-        // Show loading state
-        const saveBtn = document.getElementById('save-video-btn');
-        const saveBtnText = document.getElementById('save-btn-text');
-        const saveSpinner = document.getElementById('save-spinner');
-        
-        saveBtn.disabled = true;
-        saveBtnText.textContent = 'Saving...';
-        saveSpinner.classList.remove('hidden');
 
-        // Simulate API call
-        setTimeout(() => {
-            if (index >= 0) {
-                testimonialData[index] = { ...testimonialData[index], ...newData };
-                showToast('Video testimonial updated successfully!', 'success');
-            } else {
-                testimonialData.push(newData);
-                showToast('Video testimonial added successfully!', 'success');
-            }
+  // 🔹 thumbnail file (optional)
+ 
 
-            renderGrid();
-            updateEmptyState();
-            closeModal();
-            
-            // Reset save button
-            saveBtn.disabled = false;
-            saveBtnText.textContent = 'Save Video';
-            saveSpinner.classList.add('hidden');
-            
-            console.log("Updated Data:", testimonialData);
-        }, 1000);
+  let api = "video-create.php";
+
+  // ✅ EDIT MODE
+  if (index !== "-1") {
+    fd.append("id", testimonialData[index].id);
+    api = "video-update.php";
+  }
+
+  fetch(`http://localhost/GRP-Backend/api/video-testimonials/${api}`, {
+    method: "POST",
+    body: fd
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (!res.status) {
+      showToast(res.message, "error");
+      return;
     }
 
-    function deleteVideo(index) {
-        // Add shake animation to the card
-        const cards = document.querySelectorAll('.video-card');
-        if (cards[index]) {
-            cards[index].classList.add('animate-shake');
-            
-            setTimeout(() => {
-                if (confirm("Are you sure you want to delete this video testimonial?")) {
-                    // Add fade out animation
-                    cards[index].style.opacity = '0.5';
-                    cards[index].style.transform = 'scale(0.95)';
-                    
-                    setTimeout(() => {
-                        testimonialData.splice(index, 1);
-                        renderGrid();
-                        updateEmptyState();
-                        showToast('Video testimonial deleted', 'info');
-                    }, 300);
-                } else {
-                    cards[index].classList.remove('animate-shake');
-                }
-            }, 300);
-        }
-    }
+    closeModal();
+    fetchTestimonials();
+    showToast(index === "-1" ? "Video added" : "Video updated", "success");
+  })
+  .catch(() => showToast("Server error", "error"));
+}
+
+
+
+
+
+    function deleteVideo(id) {
+  if (!confirm("Delete this testimonial?")) return;
+
+  const fd = new FormData();
+  fd.append("id", id);
+
+  fetch("http://localhost/GRP-Backend/api/video-testimonials/video-delete.php", {
+    method: "POST",
+    body: fd
+  })
+  .then(r => r.json())
+  .then(() => {
+    fetchTestimonials();
+    showToast("Video testimonial deleted", "info");
+  });
+}
+
+
 
     // --- EVENT LISTENERS SETUP ---
     function setupEventListeners() {

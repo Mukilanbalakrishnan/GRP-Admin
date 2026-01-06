@@ -1,49 +1,7 @@
 
     // 1. Initial Data (From your main site code)
-    let reviewsData = [
-        { 
-            id: 1, 
-            name: "John Doe", 
-            role: "Factory Owner", 
-            text: "The industrial roofing system exceeded our expectations. Professional, efficient, and top-notch quality.", 
-            rating: 5 
-        },
-        { 
-            id: 2, 
-            name: "Sarah Lee", 
-            role: "Ops Manager", 
-            text: "Rapid waterproofing solution executed flawlessly. They truly understand industrial needs.", 
-            rating: 5 
-        },
-        { 
-            id: 3, 
-            name: "Mike Ross", 
-            role: "Facility Director", 
-            text: "Preventive maintenance saved us thousands. Highly reliable partners for the long term.", 
-            rating: 4 
-        },
-        { 
-            id: 4, 
-            name: "Emily White", 
-            role: "Lead Architect", 
-            text: "Innovative solar integration that respects the building's aesthetic. A pleasure to work with.", 
-            rating: 5 
-        },
-        { 
-            id: 5, 
-            name: "Robert King", 
-            role: "Plant Manager", 
-            text: "Waterproofing that withstands extreme chemical exposure. Unmatched technical expertise.", 
-            rating: 5 
-        },
-        { 
-            id: 6, 
-            name: "Lisa Miller", 
-            role: "Property Director", 
-            text: "Kept our complex running during severe weather. The most responsive team we've hired.", 
-            rating: 5 
-        },
-    ];
+    let reviewsData = [];
+
 
     // Color gradients for avatars
     const avatarGradients = [
@@ -66,11 +24,10 @@
 
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
-        renderGrid();
-        lucide.createIcons();
-        setupEventListeners();
-        updateEmptyState();
-    });
+    fetchReviews();
+    setupEventListeners();
+});
+
 
     // --- HELPER: Generate Star HTML ---
     function getStarsHtml(rating, size = 'w-4 h-4', animate = false) {
@@ -155,6 +112,25 @@ flex flex-col justify-between
         
         setTimeout(() => lucide.createIcons(), 100);
     }
+
+    function fetchReviews() {
+    fetch("http://localhost/GRP-Backend/api/text-testimonals/text-list.php")
+        .then(res => res.json())
+        .then(data => {
+            reviewsData = data.map(item => ({
+                id: item.id,
+                name: item.name,
+                role: item.role,
+                text: item.text,
+                rating: parseInt(item.rating)
+            }));
+
+            renderGrid();
+            updateEmptyState();
+            lucide.createIcons();
+        });
+}
+
 
     function updateEmptyState() {
         const emptyState = document.getElementById('empty-state');
@@ -242,96 +218,51 @@ flex flex-col justify-between
 
     // --- CRUD ACTIONS ---
     function saveReview() {
-        const index = parseInt(document.getElementById('review-index').value);
-        const name = document.getElementById('input-name').value.trim();
-        const role = document.getElementById('input-role').value.trim();
-        const text = document.getElementById('input-text').value.trim();
-        const rating = parseInt(document.getElementById('input-rating').value);
+    const index = parseInt(document.getElementById('review-index').value);
 
-        // Validation
-        if (!name) {
-            showToast('Please enter client name', 'error');
-            document.getElementById('input-name').classList.add('animate-shake');
-            setTimeout(() => document.getElementById('input-name').classList.remove('animate-shake'), 300);
-            return;
-        }
-        
-        if (!text) {
-            showToast('Please enter review text', 'error');
-            document.getElementById('input-text').classList.add('animate-shake');
-            setTimeout(() => document.getElementById('input-text').classList.remove('animate-shake'), 300);
-            return;
-        }
-        
-        if (text.length > 300) {
-            showToast('Review text must be 300 characters or less', 'error');
-            return;
-        }
+    const fd = new FormData();
+    fd.append("name", document.getElementById("input-name").value.trim());
+fd.append("role", document.getElementById("input-role").value.trim());
+fd.append("text", document.getElementById("input-text").value.trim());
+fd.append("rating", document.getElementById("input-rating").value);
 
-        const newData = { 
-            id: Date.now(), 
-            name, 
-            role, 
-            text, 
-            rating 
-        };
 
-        // Show loading state
-        const saveBtn = document.getElementById('save-review-btn');
-        const saveBtnText = document.getElementById('save-btn-text');
-        const saveSpinner = document.getElementById('save-spinner');
-        
-        saveBtn.disabled = true;
-        saveBtnText.textContent = 'Saving...';
-        saveSpinner.classList.remove('hidden');
+    let api = "text-create.php";
 
-        // Simulate API call
-        setTimeout(() => {
-            if (index >= 0) {
-                reviewsData[index] = { ...reviewsData[index], ...newData };
-                showToast('Review updated successfully!', 'success');
-            } else {
-                reviewsData.push(newData);
-                showToast('Review added successfully!', 'success');
-            }
-
-            renderGrid();
-            updateEmptyState();
-            closeModal();
-            
-            // Reset save button
-            saveBtn.disabled = false;
-            saveBtnText.textContent = 'Save Review';
-            saveSpinner.classList.add('hidden');
-            
-            console.log("Updated Reviews:", reviewsData);
-        }, 800);
+    if (index >= 0) {
+        fd.append("id", reviewsData[index].id);
+        api = "text-update.php";
     }
+
+    fetch(`http://localhost/GRP-Backend/api/text-testimonals/${api}`, {
+        method: "POST",
+        body: fd
+    })
+    .then(r => r.json())
+    .then(() => {
+        closeModal();
+        fetchReviews();
+        showToast(index >= 0 ? "Review updated" : "Review added", "success");
+    });
+}
+
 
     function deleteReview(index) {
-        // Add shake animation to the card
-        const cards = document.querySelectorAll('.review-card');
-        if (cards[index]) {
-            cards[index].classList.add('animate-shake');
-            
-            setTimeout(() => {
-                if (confirm("Are you sure you want to delete this review?")) {
-                    // Add fade out animation
-                    cards[index].style.opacity = '0.5';
-                    cards[index].style.transform = 'scale(0.95)';
-                    
-                    setTimeout(() => {
-                        reviewsData.splice(index, 1);
-                        renderGrid();
-                        updateEmptyState();
-                        showToast('Review deleted', 'info');
-                    }, 300);
-                } else {
-                    cards[index].classList.remove('animate-shake');
-                }
-            }, 300);
-        }
-    }
+    if (!confirm("Delete this review?")) return;
+
+    const fd = new FormData();
+    fd.append("id", reviewsData[index].id);
+
+    fetch("http://localhost/GRP-Backend/api/text-testimonals/text-delete.php", {
+        method: "POST",
+        body: fd
+    })
+    .then(() => {
+        fetchReviews();
+        showToast("Review deleted", "info");
+    });
+}
+
 
     // --- EVENT LISTENERS SETUP ---
     function setupEventListeners() {

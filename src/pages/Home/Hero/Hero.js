@@ -1,11 +1,8 @@
 
         let heroState = {
-            images: [
-                "https://images.unsplash.com/photo-1632759145351-1d592919f522?q=80&w=800",
-                "https://images.unsplash.com/photo-1517646287270-a5a9ca602e5c?q=80&w=800",
-                "https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w-800"
-            ]
-        };
+    images: [] 
+};
+
 
         let replaceIndex = null;
         let isDragging = false;
@@ -15,10 +12,12 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
+            loadHeroImages();
             renderImages();
             setupFileUpload();
             setupReplaceLogic();
-            setupDragAndDrop();
+            setupImageDragAndDrop();
+
             updateEmptyState();
         });
 
@@ -43,46 +42,47 @@
                 emptyState.classList.add('hidden');
                 grid.classList.remove('hidden');
                 
-                heroState.images.forEach((url, index) => {
-                    const card = document.createElement('div');
-                    card.className = `image-card group relative aspect-video bg-gray-100 rounded-lg overflow-hidden border shadow-sm`;
-                    card.setAttribute('data-index', index);
-                    card.setAttribute('draggable', 'true');
-                    
-                    // Add staggered animation
-                    card.style.animation = `fadeIn 0.5s ease-out ${index * 0.1}s forwards`;
-                    card.style.opacity = '0';
-                    
-                    card.innerHTML = `
-                        <img src="${url}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                        
-                        <div class="hover-buttons absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end justify-center p-4">
-                            <div class="flex gap-2">
-                                <button onclick="triggerReplace(${index})"
-                                    class="button-scale p-3 bg-white rounded-full hover:text-blue-600 hover:shadow-lg transition-all duration-300"
-                                    title="Replace image">
-                                    <i data-lucide="pencil" class="w-4 h-4"></i>
-                                </button>
-                                
-                                <button onclick="removeImage(${index})"
-                                    class="button-scale p-3 bg-white rounded-full text-red-500 hover:text-red-600 hover:shadow-lg transition-all duration-300"
-                                    title="Delete image">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                                
-                                <button class="button-scale p-3 bg-white rounded-full text-gray-600 hover:text-gray-800 hover:shadow-lg transition-all duration-300 cursor-move handle"
-                                    title="Drag to reorder">
-                                    <i data-lucide="grip-vertical" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <span class="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded transition-all duration-300 group-hover:bg-black/80">
-                            Slide ${index + 1}
-                        </span>
-                    `;
-                    grid.appendChild(card);
-                });
+                heroState.images.forEach((img, index) => {
+    const imageURL = img.isNew
+        ? URL.createObjectURL(img.file)
+        : "http://localhost/GRP-Backend/" + img.image_path;
+
+
+    const card = document.createElement('div');
+    card.className =
+        "image-card group relative aspect-video bg-gray-100 rounded-lg overflow-hidden border shadow-sm";
+    card.setAttribute("data-index", index);
+    card.setAttribute("draggable", "true");
+
+    card.innerHTML = `
+        <img src="${imageURL}" class="w-full h-full object-cover">
+
+        <div class="hover-buttons absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end justify-center p-4">
+            <div class="flex gap-2">
+                <button onclick="triggerReplace(${index})"
+                    class="p-3 bg-white rounded-full">
+                    <i data-lucide="pencil"></i>
+                </button>
+
+                <button onclick="removeImage(${index})"
+                    class="p-3 bg-white rounded-full text-red-500">
+                    <i data-lucide="trash-2"></i>
+                </button>
+
+                <button class="p-3 bg-white rounded-full cursor-move handle">
+                    <i data-lucide="grip-vertical"></i>
+                </button>
+            </div>
+        </div>
+
+        <span class="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded">
+            Slide ${index + 1}
+        </span>
+    `;
+
+    grid.appendChild(card);
+});
+
                 
                 // Reinitialize icons after adding new images
                 setTimeout(() => lucide.createIcons(), 100);
@@ -251,50 +251,34 @@
         }
 
         function handleFiles(files) {
-            if (heroState.images.length + files.length > 10) {
-                showToast('Maximum 10 images allowed', 'error');
-                return false;
-            }
-            
-            let validFiles = 0;
-            let oversizedFiles = 0;
-            
-            [...files].forEach(file => {
-                if (!file.type.startsWith('image/')) {
-                    showToast(`${file.name} is not an image file`, 'error');
-                    return;
-                }
-                
-                if (file.size > 5 * 1024 * 1024) { // 5MB limit
-                    oversizedFiles++;
-                    return;
-                }
-                
-                validFiles++;
-                const reader = new FileReader();
-                reader.onload = e => {
-                    heroState.images.push(e.target.result);
-                    renderImages();
-                    updateEmptyState();
-                    
-                    // Show a success toast for each image
-                    if (validFiles === 1) {
-                        showToast(`${file.name} uploaded successfully`, 'success');
-                    }
-                };
-                reader.readAsDataURL(file);
-            });
-            
-            if (oversizedFiles > 0) {
-                showToast(`${oversizedFiles} file(s) exceeded 5MB limit`, 'error');
-            }
-            
-            if (validFiles > 1) {
-                showToast(`${validFiles} images uploaded successfully`, 'success');
-            }
-            
-            return validFiles > 0;
+    if (!files || files.length === 0) return false;
+
+    for (const file of files) {
+        if (!file.type.startsWith("image/")) {
+            showToast(`${file.name} is not an image`, "error");
+            return false;
         }
+
+        if (file.size > 5 * 1024 * 1024) {
+            showToast(`${file.name} exceeds 5MB`, "error");
+            return false;
+        }
+
+        heroState.images.push({
+            file,
+            isNew: true
+        });
+    }
+
+    renderImages();
+    updateEmptyState();
+    showToast("Images added (not saved yet)", "info");
+    return true;
+}
+
+    
+
+
         
         function updateEmptyState() {
             const emptyState = document.getElementById('empty-state');
@@ -347,68 +331,59 @@
         }
 
         // ---------------- DELETE ----------------
-        function removeImage(index) {
-            // Add shake animation
-            const cards = document.querySelectorAll('.image-card');
-            if (cards[index]) {
-                cards[index].classList.add('animate-shake');
-                
-                setTimeout(() => {
-                    if (confirm('Are you sure you want to delete this image?')) {
-                        // Add fade out animation
-                        cards[index].style.opacity = '0';
-                        cards[index].style.transform = 'scale(0.8)';
-                        
-                        setTimeout(() => {
-                            heroState.images.splice(index, 1);
-                            renderImages();
-                            updateEmptyState();
-                            showToast('Image deleted', 'info');
-                        }, 300);
-                    } else {
-                        cards[index].classList.remove('animate-shake');
-                    }
-                }, 300);
-            }
-        }
+        
 
         // ---------------- SAVE ----------------
-        function saveChanges() {
-            const saveButton = document.getElementById('save-button');
-            const saveText = document.getElementById('save-text');
-            const saveSpinner = document.getElementById('save-spinner');
-            
-            // Disable button and show spinner
-            saveButton.disabled = true;
-            saveText.classList.add('hidden');
-            saveSpinner.classList.remove('hidden');
-            saveButton.classList.remove('hover:bg-blue-700');
-            
-            // Simulate API call delay
-            setTimeout(() => {
-                console.log('Hero Images:', heroState.images);
-                
-                // Show success animation
-                saveButton.classList.remove('bg-blue-600');
-                saveButton.classList.add('bg-green-600');
-                saveButton.classList.add('animate-pulse-once');
-                
-                // Show success toast
-                showToast('Changes saved successfully!', 'success');
-                
-                // Reset button after delay
-                setTimeout(() => {
-                    saveButton.classList.remove('bg-green-600');
-                    saveButton.classList.remove('animate-pulse-once');
-                    saveButton.classList.add('bg-blue-600');
-                    saveButton.classList.add('hover:bg-blue-700');
-                    
-                    saveText.classList.remove('hidden');
-                    saveSpinner.classList.add('hidden');
-                    saveButton.disabled = false;
-                }, 1500);
-            }, 1200);
+       async function saveChanges() {
+    const saveButton = document.getElementById('save-button');
+    saveButton.disabled = true;
+
+    try {
+        let position = 1;
+
+        for (const img of heroState.images) {
+            if (!img.isNew) {
+                position++;
+                continue;
+            }
+
+            const formData = new FormData();
+            formData.append("image", img.file);
+            formData.append("position", position);
+
+            const res = await fetch(
+                "http://localhost/GRP-Backend/api/hero/hero-upload.php",
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+            const result = await res.json();
+            if (!result.status) throw new Error("Upload failed");
+
+            img.isNew = false;
+            img.image_path = result.path;
+            delete img.file;
+
+            position++;
         }
+
+        await loadHeroImages(); // 🔄 reload from DB
+        showToast("Images saved successfully", "success");
+
+    } catch (e) {
+        console.error(e);
+        showToast("Upload failed", "error");
+    }
+
+    saveButton.disabled = false;
+}
+
+
+
+
+
         
         // ---------------- TOAST NOTIFICATION ----------------
         function showToast(message, type = 'info') {
@@ -448,6 +423,53 @@
     setTimeout(() => {
         navigateHome();
     }, 300); // must match animation duration
+}
+
+
+async function loadHeroImages() {
+    const res = await fetch(
+        "http://localhost/GRP-Backend/api/hero/hero-list.php"
+    );
+    const result = await res.json();
+
+    if (!result.status) return;
+
+    heroState.images = result.data;
+    renderImages();
+    updateEmptyState();
+}
+
+
+async function removeImage(index) {
+    const image = heroState.images[index];
+    if (!confirm("Delete this image?")) return;
+
+    await fetch(
+        "http://localhost/GRP-Backend/api/hero/hero-delete.php",
+        {
+            method: "POST",
+            body: new URLSearchParams({ id: image.id })
+        }
+    );
+
+    heroState.images.splice(index, 1);
+    renderImages();
+}
+
+async function saveOrder() {
+    const payload = heroState.images.map((img, i) => ({
+        id: img.id,
+        position: i + 1
+    }));
+
+    await fetch(
+        "http://localhost/GRP-Backend/api/hero/hero-reorder.php",
+        {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        }
+    );
 }
 
 /* -------------------------

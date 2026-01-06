@@ -30,11 +30,8 @@ export function rendergallery(){
     const dropZone = document.getElementById('drop-zone');
 
     // State
-    let galleryData = JSON.parse(localStorage.getItem('galleryData')) || [
-        { id: '1', url: 'https://images.unsplash.com/photo-1632759905292-cc232758f8b8?q=80&w=600&auto=format&fit=crop', title: 'Modern Clay Roof', category: 'Roofing', date: '2024-01-15' },
-        { id: '2', url: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=600&auto=format&fit=crop', title: 'Attic Insulation Setup', category: 'Attic', date: '2024-02-10' },
-        { id: '3', url: 'https://images.unsplash.com/photo-1596256860361-b952c87ba9b6?q=80&w=600&auto=format&fit=crop', title: 'Solar Panel Update', category: 'Installation', date: '2024-03-05' },
-    ];
+    let galleryData = [];
+
 
     // We need to store the "current editing URL" to persist it if no new file is uploaded
     let currentEditUrl = '';
@@ -49,6 +46,19 @@ export function rendergallery(){
             console.error(e);
         }
     };
+
+    async function loadGallery() {
+    try {
+        const res = await fetch(
+            "http://localhost/GRP-Backend/api/gallery/gallery-list.php"
+        );
+        galleryData = await res.json();
+        render();
+    } catch (err) {
+        console.error("Failed to load gallery", err);
+    }
+}
+
 
     // Helper: Format Date
     const formatDate = (dateString) => {
@@ -196,16 +206,24 @@ export function rendergallery(){
         }
     });
 
-    deleteSelectedBtn.addEventListener('click', () => {
-        const checkboxes = document.querySelectorAll('.row-checkbox:checked');
-        const idsToDelete = Array.from(checkboxes).map(cb => cb.value);
+    deleteSelectedBtn.addEventListener('click', async () => {
+    const ids = [...document.querySelectorAll('.row-checkbox:checked')]
+        .map(cb => cb.value);
 
-        if (confirm(`Are you sure you want to delete ${idsToDelete.length} items?`)) {
-            galleryData = galleryData.filter(item => !idsToDelete.includes(item.id));
-            save();
-            selectAllCheckbox.checked = false;
-        }
-    });
+    if (!confirm(`Delete ${ids.length} items?`)) return;
+
+    const fd = new FormData();
+    ids.forEach(id => fd.append("ids[]", id));
+
+    await fetch(
+        "http://localhost/GRP-Backend/api/gallery/gallery-delete.php",
+        { method: "POST", body: fd }
+    );
+
+    selectAllCheckbox.checked = false;
+    loadGallery();
+});
+
 
     const openModal = (isEdit = false, id = null) => {
         modal.classList.remove('hidden');
@@ -244,60 +262,56 @@ export function rendergallery(){
     });
 
     form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('image-id').value;
-        const title = document.getElementById('image-title').value;
-        const category = document.getElementById('image-category').value;
-        const date = new Date().toISOString();
+    e.preventDefault();
 
-        let url = currentEditUrl;
+    const id = document.getElementById('image-id').value;
+    const title = document.getElementById('image-title').value;
+    const category = document.getElementById('image-category').value;
+    const imageFile = fileInput.files[0];
 
-        // Check if new file uploaded
-        if (fileInput.files.length > 0) {
-            try {
-                url = await readFile(fileInput.files[0]);
-            } catch (err) {
-                console.error("Error reading file", err);
-                alert("Failed to read file");
-                return;
-            }
-        } else if (!url && !id) {
-            alert("Please upload an image");
-            return;
-        }
+    const fd = new FormData();
+    fd.append("title", title);
+    fd.append("category", category);
 
+    if (imageFile) {
+        fd.append("image", imageFile);
+    }
+
+    try {
+        let url = "gallery-create.php";
         if (id) {
-            const index = galleryData.findIndex(item => item.id === id);
-            if (index !== -1) {
-                galleryData[index] = { ...galleryData[index], url, title, category };
-            }
-        } else {
-            const newId = (galleryData.length > 0 ? Math.max(...galleryData.map(i => parseInt(i.id))) + 1 : 1).toString();
-            galleryData.push({ id: newId, url, title, category, date });
+            fd.append("id", id);
+            url = "gallery-update.php";
         }
-        save();
+
+        const res = await fetch(
+            `http://localhost/GRP-Backend/api/gallery/${url}`,
+            { method: "POST", body: fd }
+        );
+
+        const data = await res.json();
+        if (!data.status) throw new Error("Operation failed");
+
         closeModal();
-    });
+        loadGallery();
+
+    } catch (err) {
+        alert("Failed to save image");
+        console.error(err);
+    }
+});
+
 
     searchInput.addEventListener('input', render);
     filterSelect.addEventListener('change', render);
 
     window.editImage = (id) => openModal(true, id);
-    window.deleteImage = (id) => {
-        if (confirm('Are you sure you want to delete this record?')) {
-            galleryData = galleryData.filter(item => item.id !== id);
-            save();
-        }
-    };
+    window.deleteImage
 
-    window.logout = () => {
-        if (confirm('Are you sure you want to log out?')) {
-            localStorage.removeItem('authToken');
-            window.location.href = '../login page/login.html';
-        }
-    };
+    
 
-    render();
+    loadGallery();
+
 }
 
 

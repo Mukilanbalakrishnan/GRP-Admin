@@ -48,10 +48,7 @@
                         </button>
 
                         <div class="relative group">
-                            <button
-                                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded shadow-sm text-sm font-medium flex items-center gap-2 transition-colors">
-                                <i data-lucide="filter" class="w-4 h-4"></i> Filter
-                            </button>
+                            
                             <div
                                 class="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 hidden group-hover:block z-10 p-2">
                                 <select id="gallery-filter"
@@ -72,10 +69,7 @@
                                 class="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64">
                             <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3 top-2.5"></i>
                         </div>
-                        <button
-                            class="bg-white border border-gray-300 text-gray-700 px-3 py-2 rounded shadow-sm hover:bg-gray-50 text-sm font-medium">
-                            <i data-lucide="download" class="w-4 h-4"></i> Export
-                        </button>
+                        
                     </div>
                 </div>
 
@@ -223,6 +217,18 @@
     </div>
 
     <script src="gallery.js"></script>
+    <script type="module" src="/main.js"></script>
+
+    <script>
+  window.addEventListener("DOMContentLoaded", () => {
+    // force main.js logout to win
+    if (typeof window.logout === "function") {
+      window.logout = window.logout;
+    }
+  });
+</script>
+
+
     <script>
         lucide.createIcons();
     </script>
