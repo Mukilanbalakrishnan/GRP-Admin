@@ -35,6 +35,9 @@ function renderSidebar() {
             <a href="src/pages/hero/gallery/gallery.html" class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
                 <i data-lucide="image" class="w-5 h-5 mr-3"></i> Gallery
             </a>
+            <a href="src/pages/hero/products/products.html" class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
+                <i data-lucide="shopping-bag" class="w-5 h-5 mr-3"></i> Products
+            </a>
             <button onclick="loadPage('contact')" class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
                 <i data-lucide="mail" class="w-5 h-5 mr-3"></i> Contact
             </button>

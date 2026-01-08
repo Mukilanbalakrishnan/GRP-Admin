@@ -12,6 +12,24 @@
         body {
             font-family: 'Outfit', sans-serif;
         }
+
+        /* Custom scrollbar for textarea */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        textarea::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        textarea::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
     </style>
 </head>
 
@@ -48,6 +66,10 @@
                     class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
                     <i data-lucide="image" class="w-5 h-5 mr-3"></i> Gallery
                 </a>
+                <a href="../products/products.html"
+                    class="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-400 hover:bg-slate-800 hover:text-white rounded-lg transition-colors">
+                    <i data-lucide="shopping-bag" class="w-5 h-5 mr-3"></i> Products
+                </a>
             </nav>
 
             <div class="p-4 bg-slate-950 border-t border-slate-800 shrink-0">
@@ -60,100 +82,206 @@
 
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto bg-gray-50 relative w-full">
-            <!-- Content Container -->
-            <div id="services-container" class="p-6 md:p-8 min-h-screen">
-                <!-- Injected via JS -->
-                <div class="animate-pulse flex items-center justify-center h-full text-gray-400">Loading Services...
+            <div class="p-6 md:p-8 min-h-screen">
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">Services <span
+                                class="text-gray-400 text-xl font-normal">Manager</span></h1>
+                        <p class="text-gray-500 text-sm mt-1">Manage your service offerings.</p>
+                    </div>
+                    <button id="add-service-btn"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg shadow-md shadow-blue-200 text-sm font-semibold flex items-center gap-2 transition-all transform hover:-translate-y-0.5">
+                        <i data-lucide="plus" class="w-5 h-5"></i> Add Service
+                    </button>
+                </div>
+
+                <!-- Services Grid -->
+                <div id="services-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Cards will be injected here -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="services-empty"
+                    class="hidden flex flex-col items-center justify-center py-24 text-gray-400 bg-white rounded-2xl border border-dashed border-gray-300">
+                    <div class="bg-gray-50 p-4 rounded-full mb-4">
+                        <i data-lucide="briefcase" class="w-12 h-12 text-gray-300"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-1">No services found</h3>
+                    <p class="text-sm text-gray-500 mb-6">Get started by creating your first service.</p>
+                    <button onclick="document.getElementById('add-service-btn').click()"
+                        class="text-blue-600 hover:text-blue-700 font-medium text-sm">Create New Service</button>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Service Modal (Hidden) -->
+    <!-- Modal -->
     <div id="service-modal"
-        class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50 backdrop-blur-sm overflow-y-auto py-10">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 relative mx-4 my-auto">
-            <button id="close-service-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            <h3 class="text-xl font-bold mb-6 text-gray-800">Add New Service</h3>
-            <form id="service-form" class="space-y-6">
-                <!-- Helper for ID if editing? Currently Add Only -->
+        class="fixed inset-0 bg-black/60 hidden flex items-center justify-center z-50 backdrop-blur-sm transition-opacity p-4">
+        <div
+            class="bg-white rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col transform transition-all scale-100 animate-in fade-in zoom-in duration-200">
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Column 1: Basic Info -->
-                    <div class="space-y-4">
-                        <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wide border-b pb-2">Basic Info
-                        </h4>
+            <!-- Modal Header -->
+            <div
+                class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-white rounded-t-xl shrink-0">
+                <h3 id="modal-title" class="text-xl font-bold text-gray-800">Add New Service</h3>
+                <button id="close-modal-btn"
+                    class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="flex-1 overflow-y-auto p-8">
+                <form id="service-form" class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <input type="hidden" id="service-id">
+
+                    <!-- Left Column: Basic Info -->
+                    <div class="space-y-6">
+                        <h4
+                            class="text-sm font-bold text-blue-600 uppercase tracking-wider border-b border-blue-100 pb-2 mb-4">
+                            Basic Info</h4>
+
+                        <!-- Image Upload -->
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Service
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Service
                                 Thumbnail</label>
-                            <input type="file" id="service-thumb-input" class="w-full text-sm block text-slate-500
-                                file:mr-4 file:py-2 file:px-4
-                                file:rounded-full file:border-0
-                                file:text-sm file:font-semibold
-                                file:bg-blue-50 file:text-blue-700
-                                hover:file:bg-blue-100" accept="image/*">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Service Title</label>
-                            <input type="text" id="service-title" placeholder="e.g. Faucet Repair"
-                                class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                required>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Short
-                                Description</label>
-                            <textarea id="service-desc" placeholder="Brief summary for the card..."
-                                class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                rows="3"></textarea>
-                        </div>
-                    </div>
 
-                    <!-- Column 2: About & Video -->
-                    <div class="space-y-4">
-                        <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wide border-b pb-2">About &
-                            Details</h4>
+                            <div id="preview-section" class="hidden mb-3 relative group">
+                                <img id="image-preview" src=""
+                                    class="w-full h-48 object-cover rounded-lg border border-gray-200 shadow-sm">
+                                <button type="button" id="remove-image-btn"
+                                    class="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-600">
+                                    <i data-lucide="x" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <label
+                                    class="cursor-pointer bg-blue-50 text-blue-600 hover:bg-blue-100 px-4 py-2 rounded-lg font-medium text-sm transition-colors border border-blue-200">
+                                    Choose File
+                                    <input type="file" id="image-file" accept="image/*" class="hidden">
+                                </label>
+                                <span id="file-name-display" class="text-sm text-gray-500 italic">No file chosen</span>
+                            </div>
+                        </div>
+
+                        <!-- Title -->
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">About Section
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Service
                                 Title</label>
-                            <input type="text" id="new-about-title" placeholder="e.g. About Faucet Repairs"
-                                class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <input type="text" id="service-title" required placeholder="e.g. Faucet Repair"
+                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all placeholder-gray-400 text-gray-700 font-medium">
                         </div>
+
+                        <!-- Short Description -->
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Introduction</label>
-                            <textarea id="new-about-intro" placeholder="Detailed introduction..."
-                                class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                rows="2"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Features (One per
-                                line)</label>
-                            <textarea id="new-about-features" placeholder="- Feature 1&#10;- Feature 2"
-                                class="w-full border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                rows="2"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Add Initial Video
-                                (Thumbnail)</label>
-                            <input type="file" id="new-video-input" class="w-full text-sm block text-slate-500
-                                file:mr-4 file:py-2 file:px-4
-                                file:rounded-full file:border-0
-                                file:text-sm file:font-semibold
-                                file:bg-blue-50 file:text-blue-700
-                                hover:file:bg-blue-100" accept="image/*">
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Short
+                                Description</label>
+                            <textarea id="service-short-desc" rows="3" required
+                                placeholder="Brief summary for the card..."
+                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all placeholder-gray-400 text-gray-700"></textarea>
                         </div>
                     </div>
-                </div>
 
-                <div class="flex justify-end gap-3 pt-4 border-t">
-                    <button type="button" id="cancel-service-modal"
-                        class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded text-sm font-medium transition-colors">Cancel</button>
-                    <button type="submit"
-                        class="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded text-sm font-bold shadow-sm transition-transform active:scale-95">Save
-                        Service</button>
-                </div>
-            </form>
+                    <!-- Right Column: Details & Video -->
+                    <div class="space-y-6">
+                        <h4
+                            class="text-sm font-bold text-blue-600 uppercase tracking-wider border-b border-blue-100 pb-2 mb-4">
+                            About & Details</h4>
+
+                        <!-- About Title -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">About
+                                Section Title</label>
+                            <input type="text" id="about-title" placeholder="e.g. About Faucet Repairs"
+                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all placeholder-gray-400 text-gray-700">
+                        </div>
+
+                        <!-- Introduction -->
+                        <div>
+                            <label
+                                class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Introduction</label>
+                            <textarea id="about-intro" rows="4" placeholder="Detailed introduction..."
+                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all placeholder-gray-400 text-gray-700"></textarea>
+                        </div>
+
+                        <!-- Features -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Features
+                                (One per line)</label>
+                            <textarea id="service-features" rows="4" placeholder="- Feature 1&#10;- Feature 2"
+                                class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all placeholder-gray-400 text-gray-700 font-mono"></textarea>
+                        </div>
+
+                        <!-- Video URLs -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Video URLs
+                                (Max 4)</label>
+                            <div class="space-y-4">
+                                <!-- Video 1 -->
+                                <div>
+                                    <div class="relative">
+                                        <input type="url" id="video-url-1" placeholder="Video URL 1 (YouTube...)"
+                                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all placeholder-gray-400 text-gray-700">
+                                        <i data-lucide="video"
+                                            class="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5"></i>
+                                    </div>
+                                    <img id="preview-video-1" src=""
+                                        class="hidden mt-2 h-20 w-36 object-cover rounded border border-gray-200 shadow-sm">
+                                </div>
+
+                                <!-- Video 2 -->
+                                <div>
+                                    <div class="relative">
+                                        <input type="url" id="video-url-2" placeholder="Video URL 2"
+                                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all placeholder-gray-400 text-gray-700">
+                                        <i data-lucide="video"
+                                            class="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5"></i>
+                                    </div>
+                                    <img id="preview-video-2" src=""
+                                        class="hidden mt-2 h-20 w-36 object-cover rounded border border-gray-200 shadow-sm">
+                                </div>
+
+                                <!-- Video 3 -->
+                                <div>
+                                    <div class="relative">
+                                        <input type="url" id="video-url-3" placeholder="Video URL 3"
+                                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all placeholder-gray-400 text-gray-700">
+                                        <i data-lucide="video"
+                                            class="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5"></i>
+                                    </div>
+                                    <img id="preview-video-3" src=""
+                                        class="hidden mt-2 h-20 w-36 object-cover rounded border border-gray-200 shadow-sm">
+                                </div>
+
+                                <!-- Video 4 -->
+                                <div>
+                                    <div class="relative">
+                                        <input type="url" id="video-url-4" placeholder="Video URL 4"
+                                            class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all placeholder-gray-400 text-gray-700">
+                                        <i data-lucide="video"
+                                            class="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5"></i>
+                                    </div>
+                                    <img id="preview-video-4" src=""
+                                        class="hidden mt-2 h-20 w-36 object-cover rounded border border-gray-200 shadow-sm">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="px-8 py-5 bg-gray-50 border-t border-gray-200 flex justify-end gap-3 shrink-0 rounded-b-xl">
+                <button type="button" id="cancel-btn"
+                    class="px-5 py-2.5 text-gray-600 hover:bg-gray-200 hover:text-gray-800 rounded-lg text-sm font-semibold transition-colors">Cancel</button>
+                <button type="button"
+                    onclick="document.getElementById('service-form').dispatchEvent(new Event('submit'))"
+                    class="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-bold shadow-md shadow-emerald-200 transition-all transform hover:-translate-y-0.5">Save
+                    Service</button>
+            </div>
         </div>
     </div>
 

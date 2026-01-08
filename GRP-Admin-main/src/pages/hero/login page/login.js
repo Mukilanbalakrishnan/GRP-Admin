@@ -1,109 +1,180 @@
-// Authentication Check: If already logged in, go to dashboard
-if (localStorage.getItem('authToken')) {
-    window.location.href = '../../../../index.html';
-}
-
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('login-form');
+    const loginForm = document.getElementById('loginForm');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
-    const errorMessage = document.getElementById('error-message');
-    const togglePasswordBtn = document.getElementById('toggle-password');
+    const togglePasswordBtn = document.getElementById('togglePassword');
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const loader = submitBtn.querySelector('.loader');
+    const messageBox = document.getElementById('messageBox');
 
-    // Hardcoded credentials
-    const ADMIN_EMAIL = 'admin@grp.com';
-    const ADMIN_PASS = 'admin123';
-
-    // Password Visibility Toggle
+    // Toggle Password Visibility
     togglePasswordBtn.addEventListener('click', () => {
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
-        // Refresh icon
-        const icon = type === 'password' ? 'eye' : 'eye-off';
-        togglePasswordBtn.innerHTML = `<i data-lucide="${icon}" class="h-4 w-4 text-gray-400 hover:text-gray-600 transition-colors"></i>`;
-        lucide.createIcons();
+        togglePasswordBtn.textContent = type === 'password' ? 'Show' : 'Hide';
     });
 
-    form.addEventListener('submit', (e) => {
+    // Form Submission
+    loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        // Clear previous messages
+        hideMessage();
 
         const email = emailInput.value.trim();
         const password = passwordInput.value.trim();
 
-        if (email === ADMIN_EMAIL && password === ADMIN_PASS) {
-            // Successful Login
-            localStorage.setItem('authToken', 'grp-admin-token-' + Date.now());
+        // Validation
+        if (!validateEmail(email)) {
+            showMessage('Please enter a valid email address.', 'error');
+            return;
+        }
 
-            // Redirect to main app
-            // Path from: src/pages/hero/login page/login.html -> root/index.html
-            window.location.href = '../../../../index.html';
-        } else {
-            // Error
-            errorMessage.classList.remove('hidden');
-            passwordInput.value = '';
+        if (password.length < 6) {
+            showMessage('Password must be at least 6 characters long.', 'error');
+            return;
+        }
 
-            // Shake animation
-            form.classList.add('animate-pulse');
-            setTimeout(() => form.classList.remove('animate-pulse'), 500);
+        // Simulate API Login
+        setLoading(true);
+
+        try {
+            await mockLogin(email, password);
+            showMessage('Login successful! Redirecting...', 'success');
+
+            // Redirect simulation
+            setTimeout(() => {
+                // In a real app, you would redirect here
+                // window.location.href = '/dashboard';
+                console.log('Redirecting to dashboard...');
+
+                // For demo purposes, just reset form
+                setLoading(false);
+                loginForm.reset();
+                setTimeout(() => hideMessage(), 3000);
+            }, 1500);
+
+        } catch (error) {
+            showMessage(error.message, 'error');
+            setLoading(false);
         }
     });
 
-    // Clear error on input
-    emailInput.addEventListener('input', () => errorMessage.classList.add('hidden'));
-    passwordInput.addEventListener('input', () => errorMessage.classList.add('hidden'));
+    // Mock Login API
+    function mockLogin(email, password) {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                // Simple mock logic: success if email contains "admin"
+                // Fail otherwise to demonstrate error handling
+                if (email.toLowerCase().includes('error')) {
+                    reject(new Error('Invalid credentials. Please try again.'));
+                } else {
+                    resolve({ success: true, token: 'fake-jwt-token' });
+                }
+            }, 2000);
+        });
+    }
 
-    // ==========================================
-    // Particle Animation Logic
-    // ==========================================
-    const canvas = document.getElementById('particle-canvas');
+    // Helper Functions
+    function validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+
+    function showMessage(msg, type) {
+        messageBox.textContent = msg;
+        messageBox.className = `message-box ${type}`;
+        messageBox.style.display = 'block';
+
+        // Shake animation for error
+        if (type === 'error') {
+            messageBox.classList.add('shake');
+            setTimeout(() => messageBox.classList.remove('shake'), 500);
+        }
+    }
+
+    function hideMessage() {
+        messageBox.style.display = 'none';
+        messageBox.className = 'message-box';
+    }
+
+    function setButtonLoading(isLoading) {
+        if (isLoading) {
+            submitBtn.disabled = true;
+            btnText.style.opacity = '0';
+            loader.style.display = 'block';
+        } else {
+            submitBtn.disabled = false;
+            btnText.style.opacity = '1';
+            loader.style.display = 'none';
+        }
+    }
+
+    // --- Background Animation (Atoms forming GRP) ---
+    const canvas = document.getElementById('bg-canvas');
     const ctx = canvas.getContext('2d');
-
     let particles = [];
-    const textToForm = "GRP";
+    let animationFrameId;
 
-    // Resize handling
-    let width, height;
-    const resize = () => {
-        width = window.innerWidth;
-        height = window.innerHeight;
-        canvas.width = width;
-        canvas.height = height;
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
         initParticles();
-    };
+    }
 
-    // Particle Class
     class Particle {
-        constructor(targetX, targetY) {
-            // Start at random position
-            this.x = Math.random() * width;
-            this.y = Math.random() * height;
-            // Target position from text
-            this.targetX = targetX;
-            this.targetY = targetY;
-            // Physics
-            this.vx = (Math.random() - 0.5) * 2;
-            this.vy = (Math.random() - 0.5) * 2;
-            this.ease = 0.05 + Math.random() * 0.05; // Ease factor
-            this.friction = 0.95;
-            this.size = 1.5 + Math.random() * 2;
-            this.color = `rgba(37, 99, 235, ${0.4 + Math.random() * 0.6})`; // Blue-ish
-
-            // Interaction
-            this.rootX = this.x;
-            this.rootY = this.y;
+        constructor(x, y) {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.destX = x;
+            this.destY = y;
+            this.vx = (Math.random() - 0.5) * 5;
+            this.vy = (Math.random() - 0.5) * 5;
+            this.accX = 0;
+            this.accY = 0;
+            this.friction = 0.96;
+            this.color = Math.random() > 0.5 ? '#6366f1' : '#ec4899'; // Primary or Secondary color
+            this.size = Math.random() * 2 + 1;
         }
 
         update() {
-            // Move towards target
-            const dx = this.targetX - this.x;
-            const dy = this.targetY - this.y;
+            // Physics to move towards destination
+            // Distance to target
+            const dx = this.destX - this.x;
+            const dy = this.destY - this.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
 
-            this.x += dx * this.ease;
-            this.y += dy * this.ease;
+            // Force towards target (spring-like)
+            const forceDirectionX = dx / dist;
+            const forceDirectionY = dy / dist;
+            const speed = 0.5; // Strength of pull
 
-            // Add slight jitter for "atom" feel
-            this.x += (Math.random() - 0.5) * 0.5;
-            this.y += (Math.random() - 0.5) * 0.5;
+            // Spiral/Chaotic movement when far
+            if (dist > 50) {
+                this.accX += forceDirectionX * 0.1;
+                this.accY += forceDirectionY * 0.1;
+
+                // Add some randomness/orbiting effect
+                this.vx += (Math.random() - 0.5) * 0.2;
+                this.vy += (Math.random() - 0.5) * 0.2;
+            } else {
+                // Snap to position
+                this.accX += (dx * 0.05);
+                this.accY += (dy * 0.05);
+            }
+
+            this.vx += this.accX;
+            this.vy += this.accY;
+            this.vx *= this.friction;
+            this.vy *= this.friction;
+
+            this.x += this.vx;
+            this.y += this.vy;
+
+            // Reset acceleration
+            this.accX = 0;
+            this.accY = 0;
         }
 
         draw() {
@@ -114,65 +185,68 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    const initParticles = () => {
+    function initParticles() {
         particles = [];
+        // Create an off-screen canvas to sample text
+        const textCanvas = document.createElement('canvas');
+        const textCtx = textCanvas.getContext('2d');
+        textCanvas.width = canvas.width;
+        textCanvas.height = canvas.height;
 
-        // 1. Draw text on a temporary off-screen canvas (or just clear rect) to sample pixels
-        ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = 'white'; // Placeholder
-        ctx.font = '900 20vw "Clash Display", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+        // Draw Text
+        textCtx.fillStyle = 'white';
+        textCtx.font = 'bold 20vw "Outfit", sans-serif';
+        textCtx.textAlign = 'center';
+        textCtx.textBaseline = 'middle';
+        textCtx.fillText('GRP', textCanvas.width / 2, textCanvas.height / 2);
 
-        // Measure text to center it carefully
-        ctx.fillStyle = 'rgba(0,0,0,1)';
-        ctx.fillText(textToForm, width / 2, height / 2);
+        // Sample pixels
+        const gap = 8; // Distance between particles
+        const imageData = textCtx.getImageData(0, 0, textCanvas.width, textCanvas.height).data;
 
-        // 2. Get Image Data
-        // We only scan a portion of the screen where text likely is to save perf
-        const idata = ctx.getImageData(0, 0, width, height);
-        const buffer32 = new Uint32Array(idata.data.buffer);
-
-        // 3. Sample grid
-        const grid = 6; // Check every 6th pixel (lower = more particles)
-
-        for (let y = 0; y < height; y += grid) {
-            for (let x = 0; x < width; x += grid) {
-                if (buffer32[y * width + x]) { // If pixel is not empty
+        for (let y = 0; y < textCanvas.height; y += gap) {
+            for (let x = 0; x < textCanvas.width; x += gap) {
+                const index = (y * textCanvas.width + x) * 4;
+                if (imageData[index + 3] > 128) { // If pixel is visible
                     particles.push(new Particle(x, y));
                 }
             }
         }
 
-        // Add some random background particles for depth
+        // Add some background "star" particles that just float locally
         for (let i = 0; i < 100; i++) {
-            const p = new Particle(Math.random() * width, Math.random() * height);
-            p.ease = 0.01; // Move very slowly to random target
-            p.targetX = Math.random() * width;
-            p.targetY = Math.random() * height;
-            p.color = '#e2e8f0'; // Gray
-            p.size = Math.random() * 3;
+            const p = new Particle(Math.random() * canvas.width, Math.random() * canvas.height);
+            // Remove destination force for these by setting dest to current loop
+            p.destX = p.x;
+            p.destY = p.y;
+            // Let them drift
+            p.update = function () {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                }
+            };
             particles.push(p);
         }
-    };
+    }
 
-    const animate = () => {
-        ctx.clearRect(0, 0, width, height);
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Connect particles with lines if close and forming structure
+        // (Optional optimization: only do this for a subset or skip for performance if too many particles)
+
         particles.forEach(p => {
             p.update();
             p.draw();
         });
+
         requestAnimationFrame(animate);
-    };
+    }
 
-    // Initial delay to wait for fonts? Or just go.
-    setTimeout(() => {
-        resize();
-        animate();
-    }, 100);
-
-    window.addEventListener('resize', () => {
-        // Debounce could be added
-        resize();
-    });
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    animate();
 });
