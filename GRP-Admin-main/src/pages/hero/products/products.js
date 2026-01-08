@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 ${(section.tiles || []).map(tile => `
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden group">
-                        <div class="h-56 bg-gray-100 relative">
+                        <div class="aspect-square bg-gray-100 relative">
                             <img src="${tile.image || 'https://via.placeholder.com/400x300?text=Tile'}" class="w-full h-full object-cover">
                             <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                 <button onclick="window.editTile('${tile.id}')" class="bg-white text-blue-600 p-2 rounded-full hover:bg-blue-50"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
