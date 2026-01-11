@@ -3,6 +3,14 @@
 export function renderabout(){
 
     
+    const API_BASE_URL = window.ENV?.API_BASE_URL;
+
+if (!API_BASE_URL) {
+  console.error("❌ API_BASE_URL missing (env.js not loaded)");
+}
+        let heroState = {
+    images: [] 
+};
 
 
 
@@ -87,10 +95,16 @@ export function renderabout(){
                     <div class="w-full md:w-1/3 shrink-0">
                         <div class="aspect-square rounded-lg bg-gray-100 overflow-hidden relative">
                              ${review.image
-                    ? `<img src="${review.image ? `http://localhost/GRP-Backend/${review.image}` : ''}">
- class="w-full h-full object-cover" alt="${review.name}">`
-                    : `<div class="w-full h-full flex items-center justify-center text-gray-300"><i data-lucide="user" class="w-12 h-12"></i></div>`
-                }
+  ? `<img 
+        src="${API_BASE_URL}/${review.image}" 
+        class="w-full h-full object-cover" 
+        alt="${review.name}"
+     />`
+  : `<div class="w-full h-full flex items-center justify-center text-gray-300">
+        <i data-lucide="user" class="w-12 h-12"></i>
+     </div>`
+}
+
                         </div>
                     </div>
 
@@ -127,7 +141,7 @@ export function renderabout(){
             document.getElementById('review-text').value = item.text;
 
             currentEditImage = item.image;
-            setPreview(item.image ? `http://localhost/GRP-Backend/${item.image}` : null);
+            setPreview(item.image ? `${API_BASE_URL}/${item.image}` : null);
 
         } else {
             document.getElementById('review-modal-title').innerText = 'New Review';
@@ -173,7 +187,7 @@ cancelBtn && cancelBtn.addEventListener('click', closeModal);
         api = "about-update.php";
     }
 
-    fetch(`http://localhost/GRP-Backend/api/about/${api}`, {
+    fetch(`${API_BASE_URL}/api/about/${api}`, {
         method: "POST",
         body: fd
     })
@@ -191,7 +205,7 @@ cancelBtn && cancelBtn.addEventListener('click', closeModal);
 
 
 function fetchReviews() {
-    fetch("http://localhost/GRP-Backend/api/about/about-list.php")
+    fetch(`${API_BASE_URL}/api/about/about-list.php`)
         .then(res => res.json())
         .then(data => {
             reviewsData = data;
@@ -209,7 +223,7 @@ function fetchReviews() {
     const fd = new FormData();
     fd.append("id", id);
 
-    fetch("http://localhost/GRP-Backend/api/about/about-delete.php", {
+    fetch(`${API_BASE_URL}/api/about/about-delete.php`, {
         method: "POST",
         body: fd
     })

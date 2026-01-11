@@ -2,6 +2,15 @@
     // 1. Initial Data (Based on your provided code)
     let testimonialData = [];
 
+    const API_BASE_URL = window.ENV?.API_BASE_URL;
+
+if (!API_BASE_URL) {
+  console.error("❌ API_BASE_URL missing (env.js not loaded)");
+}
+        let heroState = {
+    images: [] 
+};
+
 
     // Helpers from your frontend code
     function isInstagram(url) { return url.includes("instagram.com"); }
@@ -17,7 +26,7 @@
 
 
     function fetchTestimonials() {
-  fetch("http://localhost/GRP-Backend/api/video-testimonials/video-list.php")
+  fetch(`${API_BASE_URL}/api/video-testimonials/video-list.php`)
     .then(res => res.json())
     .then(data => {
       testimonialData = data;
@@ -326,7 +335,7 @@
     api = "video-update.php";
   }
 
-  fetch(`http://localhost/GRP-Backend/api/video-testimonials/${api}`, {
+  fetch(`${API_BASE_URL}/api/video-testimonials/${api}`, {
     method: "POST",
     body: fd
   })
@@ -354,7 +363,7 @@
   const fd = new FormData();
   fd.append("id", id);
 
-  fetch("http://localhost/GRP-Backend/api/video-testimonials/video-delete.php", {
+  fetch(`${API_BASE_URL}/api/video-testimonials/video-delete.php`, {
     method: "POST",
     body: fd
   })
@@ -462,6 +471,14 @@
         navigateHome();
     }, 300);
 }
+
+// 🔓 Expose functions used in inline HTML
+window.editVideo = editVideo;
+window.deleteVideo = deleteVideo;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.saveVideo = saveVideo;
+
 
 /* ============================
    REAL NAVIGATION

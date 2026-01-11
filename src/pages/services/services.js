@@ -12,9 +12,7 @@ const BACKEND_BASE = "http://localhost/GRP-Backend/";
 
 
 export function renderservices(){
-    console.log("renderservices running");
-// Authentication Check
-// Authentication Check
+    
 
 
 

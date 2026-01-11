@@ -1,7 +1,13 @@
 
+const API_BASE_URL = window.ENV?.API_BASE_URL;
+
+if (!API_BASE_URL) {
+  console.error("❌ API_BASE_URL missing (env.js not loaded)");
+}
         let heroState = {
     images: [] 
 };
+
 
 
         let replaceIndex = null;
@@ -45,7 +51,7 @@
                 heroState.images.forEach((img, index) => {
     const imageURL = img.isNew
         ? URL.createObjectURL(img.file)
-        : "http://localhost/GRP-Backend/" + img.image_path;
+        : `${API_BASE_URL}/` + img.image_path;
 
 
     const card = document.createElement('div');
@@ -352,7 +358,7 @@
             formData.append("position", position);
 
             const res = await fetch(
-                "http://localhost/GRP-Backend/api/hero/hero-upload.php",
+                `${API_BASE_URL}/api/hero/hero-upload.php`,
                 {
                     method: "POST",
                     body: formData
@@ -428,7 +434,7 @@
 
 async function loadHeroImages() {
     const res = await fetch(
-        "http://localhost/GRP-Backend/api/hero/hero-list.php"
+        `${API_BASE_URL}/api/hero/hero-list.php`
     );
     const result = await res.json();
 
@@ -445,7 +451,7 @@ async function removeImage(index) {
     if (!confirm("Delete this image?")) return;
 
     await fetch(
-        "http://localhost/GRP-Backend/api/hero/hero-delete.php",
+        `${API_BASE_URL}/api/hero/hero-delete.php`,
         {
             method: "POST",
             body: new URLSearchParams({ id: image.id })
@@ -462,8 +468,11 @@ async function saveOrder() {
         position: i + 1
     }));
 
+
+
+
     await fetch(
-        "http://localhost/GRP-Backend/api/hero/hero-reorder.php",
+        `${API_BASE_URL}/api/hero/hero-reorder.php`,
         {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -471,6 +480,11 @@ async function saveOrder() {
         }
     );
 }
+
+    // 🔥 Expose functions used in inline HTML
+window.removeImage = removeImage;
+window.triggerReplace = triggerReplace;
+window.saveChanges = saveChanges;
 
 /* -------------------------
    ACTUAL NAVIGATION

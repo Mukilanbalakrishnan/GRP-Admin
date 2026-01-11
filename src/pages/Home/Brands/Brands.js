@@ -1,15 +1,19 @@
 
         // 1. Initial Data (Using Images now)
 
-        const API_BASE = "http://localhost/GRP-Backend/api/brands";
+        const API_BASE_URL = window.ENV?.API_BASE_URL;
+
+if (!API_BASE_URL) {
+  console.error("❌ API_BASE_URL missing (env.js not loaded)");
+}
+        let heroState = {
+    images: [] 
+};
+        const API_BASE = `${API_BASE_URL}/api/brands`;
 
 
-        // let brandsData = [
-        //     { name: "APEX STEEL", image: "https://upload.wikimedia.org/wikipedia/commons/a/ab/Android_O_Preview_Logo.png", color: "from-orange-600 to-amber-500" },
-        //     { name: "CORE DYNAMICS", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/JavaScript-logo.png/600px-JavaScript-logo.png", color: "from-blue-600 to-cyan-500" },
-        //     { name: "TITAN STRUCT", image: "https://cdn.worldvectorlogo.com/logos/react-2.svg", color: "from-gray-700 to-gray-900" },
-        //     { name: "NEXUS GRID", image: "https://cdn.worldvectorlogo.com/logos/nodejs-icon.svg", color: "from-green-600 to-emerald-500" },
-        // ];
+
+     
 
         let brandsData = [];
 
@@ -53,7 +57,7 @@ function fetchBrands() {
       <div class="w-14 h-14 rounded-lg bg-gradient-to-br ${item.gradient}
            flex items-center justify-center border overflow-hidden p-2">
         <img 
-  src="http://localhost/GRP-Backend/${item.image_path}"
+  src="${API_BASE_URL}/${item.image_path}"
   onerror="this.style.display='none'"
   class="w-full h-full object-contain scale-110"
 >
@@ -112,7 +116,7 @@ function fetchBrands() {
     name.value = data.name;
 
     // show existing image (from server)
-    updateImagePreview(`http://localhost/GRP-Backend/${data.image_path}`);
+    updateImagePreview(`${API_BASE_URL}/${data.image_path}`);
   } else {
     title.innerText = "Add Brand";
     idx.value = "-1";
@@ -120,6 +124,12 @@ function fetchBrands() {
     updateImagePreview("");
   }
 }
+
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.saveBrand = saveBrand;
+window.deleteBrand = deleteBrand;
+
 
 
 

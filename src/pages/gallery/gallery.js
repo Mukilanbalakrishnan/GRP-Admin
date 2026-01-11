@@ -1,5 +1,14 @@
 export function rendergallery(){
 
+
+    const API_BASE_URL = window.ENV?.API_BASE_URL;
+
+if (!API_BASE_URL) {
+  console.error("❌ API_BASE_URL missing (env.js not loaded)");
+}
+        let heroState = {
+    images: [] 
+};
     const tableBody = document.getElementById('gallery-table-body');
 
     if (!tableBody) {
@@ -50,7 +59,7 @@ export function rendergallery(){
     async function loadGallery() {
     try {
         const res = await fetch(
-            "http://localhost/GRP-Backend/api/gallery/gallery-list.php"
+            `${API_BASE_URL}/api/gallery/gallery-list.php`
         );
         galleryData = await res.json();
         render();
@@ -216,7 +225,7 @@ export function rendergallery(){
     ids.forEach(id => fd.append("ids[]", id));
 
     await fetch(
-        "http://localhost/GRP-Backend/api/gallery/gallery-delete.php",
+        `${API_BASE_URL}/api/gallery/gallery-delete.php`,
         { method: "POST", body: fd }
     );
 
@@ -285,7 +294,7 @@ export function rendergallery(){
         }
 
         const res = await fetch(
-            `http://localhost/GRP-Backend/api/gallery/${url}`,
+            `${API_BASE_URL}/api/gallery/${url}`,
             { method: "POST", body: fd }
         );
 

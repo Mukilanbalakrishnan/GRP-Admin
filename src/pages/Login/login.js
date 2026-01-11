@@ -1,5 +1,14 @@
 export function renderLogin(container) {
 
+    const API_BASE_URL = window.ENV?.API_BASE_URL;
+
+    if (!API_BASE_URL) {
+  console.error("❌ API_BASE_URL missing (env.js not loaded)");
+}
+        let heroState = {
+    images: [] 
+};
+
     const loginForm = container.querySelector('#loginForm');
     const emailInput = container.querySelector('#email');
     const passwordInput = container.querySelector('#password');
@@ -23,51 +32,7 @@ export function renderLogin(container) {
         togglePasswordBtn.textContent = type === 'password' ? 'Show' : 'Hide';
     });
 
-    // Form Submission
-    // loginForm.addEventListener('submit', async (e) => {
-    //     e.preventDefault();
-
-    //     // Clear previous messages
-    //     hideMessage();
-
-    //     const email = emailInput.value.trim();
-    //     const password = passwordInput.value.trim();
-
-    //     // Validation
-    //     if (!validateEmail(email)) {
-    //         showMessage('Please enter a valid email address.', 'error');
-    //         return;
-    //     }
-
-    //     if (password.length < 6) {
-    //         showMessage('Password must be at least 6 characters long.', 'error');
-    //         return;
-    //     }
-
-    //     // Simulate API Login
-    //     setLoading(true);
-
-    //     try {
-    //         await mockLogin(email, password);
-    //         showMessage('Login successful! Redirecting...', 'success');
-
-    //         // Redirect simulation
-    //         setTimeout(() => {
-    //             // In a real app, you would redirect here
-    //             // window.location.href = '/dashboard';
-    //             console.log('Redirecting to dashboard...');
-
-    //             // For demo purposes, just reset form
-    //             setLoading(false);
-    //             loginForm.reset();
-    //             setTimeout(() => hideMessage(), 3000);
-    //         }, 1500);
-
-    //     } catch (error) {
-    //         showMessage(error.message, 'error');
-    //         setLoading(false);
-    //     }
-    // });
+    
 
     loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -91,7 +56,7 @@ export function renderLogin(container) {
 
     try {
         const res = await fetch(
-            "http://localhost/GRP-Backend/api/auth/admin-login.php",
+            `${API_BASE_URL}/api/auth/admin-login.php`,
             {
                 method: "POST",
                 headers: {

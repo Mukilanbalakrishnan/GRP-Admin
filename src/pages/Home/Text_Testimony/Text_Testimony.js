@@ -2,6 +2,15 @@
     // 1. Initial Data (From your main site code)
     let reviewsData = [];
 
+    const API_BASE_URL = window.ENV?.API_BASE_URL;
+
+if (!API_BASE_URL) {
+  console.error("❌ API_BASE_URL missing (env.js not loaded)");
+}
+        let heroState = {
+    images: [] 
+};
+
 
     // Color gradients for avatars
     const avatarGradients = [
@@ -114,7 +123,7 @@ flex flex-col justify-between
     }
 
     function fetchReviews() {
-    fetch("http://localhost/GRP-Backend/api/text-testimonals/text-list.php")
+    fetch(`${API_BASE_URL}/api/text-testimonals/text-list.php`)
         .then(res => res.json())
         .then(data => {
             reviewsData = data.map(item => ({
@@ -234,7 +243,7 @@ fd.append("rating", document.getElementById("input-rating").value);
         api = "text-update.php";
     }
 
-    fetch(`http://localhost/GRP-Backend/api/text-testimonals/${api}`, {
+    fetch(`${API_BASE_URL}/api/text-testimonals/${api}`, {
         method: "POST",
         body: fd
     })
@@ -253,7 +262,7 @@ fd.append("rating", document.getElementById("input-rating").value);
     const fd = new FormData();
     fd.append("id", reviewsData[index].id);
 
-    fetch("http://localhost/GRP-Backend/api/text-testimonals/text-delete.php", {
+    fetch(`${API_BASE_URL}/api/text-testimonals/text-delete.php`, {
         method: "POST",
         body: fd
     })
@@ -346,6 +355,15 @@ fd.append("rating", document.getElementById("input-rating").value);
         navigateHome();
     }, 300);
 }
+
+
+// 🔓 Expose functions for inline HTML onclick
+window.editReview = editReview;
+window.deleteReview = deleteReview;
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.saveReview = saveReview;
+
 
 /* ============================
    REAL NAVIGATION

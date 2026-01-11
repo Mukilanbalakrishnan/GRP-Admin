@@ -12,10 +12,12 @@ export function renderDashboard() {
 /* =========================
    DASHBOARD COUNTERS
 ========================= */
+
+const API_BASE_URL = window.ENV.API_BASE_URL;
 async function fetchDashboardStats() {
     try {
         const res = await fetch(
-            "http://localhost/GRP-Backend/api/dashboard/dashboard-stats.php"
+            `${API_BASE_URL}/api/dashboard/dashboard-stats.php`
         );
         const result = await res.json();
 
@@ -44,7 +46,7 @@ async function fetchDashboardStats() {
 async function fetchEnquiries() {
     try {
         const res = await fetch(
-            "http://localhost/GRP-Backend/api/enquiry-list.php"
+            `${API_BASE_URL}/api/enquiry-list.php`
         );
         const result = await res.json();
 

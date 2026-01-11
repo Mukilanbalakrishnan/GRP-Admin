@@ -2,6 +2,16 @@
         /* ============================
            GRADIENT POOL
         ============================ */
+
+
+        const API_BASE_URL = window.ENV?.API_BASE_URL;
+
+if (!API_BASE_URL) {
+  console.error("❌ API_BASE_URL missing (env.js not loaded)");
+}
+        let heroState = {
+    images: [] 
+};
         const GRADIENTS = [
             "from-orange-600 to-amber-500",
             "from-emerald-600 to-teal-500",
@@ -21,7 +31,7 @@
         ============================ */
 
         function fetchServices() {
-  fetch("http://localhost/GRP-Backend/api/services/service-list.php")
+  fetch(`${API_BASE_URL}/api/services/service-list.php`)
     .then(res => res.json())
     .then(data => {
       servicesData = data;
@@ -68,7 +78,7 @@
                     <div class="flex items-start justify-between mb-4">
                         <div class="w-16 h-16 rounded-xl p-[2px] bg-gradient-to-br ${gradient} shadow-md group">
                             <div class="w-full h-full rounded-[10px] overflow-hidden bg-white">
-                                <img src="http://localhost/GRP-Backend/${service.image_path}"alt="${service.title}" class="w-full h-full object-cover">
+                                <img src="${API_BASE_URL}/${service.image_path}"alt="${service.title}" class="w-full h-full object-cover">
                             </div>
                         </div>
 
@@ -122,7 +132,7 @@
   document.getElementById('input-desc').value = data.description;
 
   // show existing image from backend
-  updateImagePreview(`http://localhost/GRP-Backend/${data.image_path}`);
+  updateImagePreview(`${API_BASE_URL}/${data.image_path}`);
 } else {
   document.getElementById('input-title').value = '';
   document.getElementById('input-desc').value = '';
@@ -242,8 +252,8 @@
   }
 
   const url = id !== "-1"
-    ? "http://localhost/GRP-Backend/api/services/service-update.php"
-    : "http://localhost/GRP-Backend/api/services/service-upload.php";
+    ? `${API_BASE_URL}/api/services/service-update.php`
+    : `${API_BASE_URL}/api/services/service-upload.php`;
 
   if (id !== "-1") formData.append("id", id);
 
@@ -266,7 +276,7 @@
   const fd = new FormData();
   fd.append("id", id);
 
-  fetch("http://localhost/GRP-Backend/api/services/service-delete.php", {
+  fetch(`${API_BASE_URL}/api/services/service-delete.php`, {
     method: "POST",
     body: fd
   })

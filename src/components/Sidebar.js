@@ -5,6 +5,7 @@ const menuItems = [
     { id: 'home', label: 'Home Page', icon: 'layout-template', type: 'link' },
     { id: 'about', label: 'About Us', icon: 'info', type: 'link' },
     { id: 'services', label: 'Services', icon: 'briefcase', type: 'link' },
+    { id: 'product', label: 'Product', icon: 'briefcase', type: 'link' },
     { id: 'gallery', label: 'Gallery', icon: 'image', type: 'link' },
     // { id: 'contact', label: 'Contact', icon: 'mail', type: 'link' },
 ];
